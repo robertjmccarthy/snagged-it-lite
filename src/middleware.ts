@@ -30,40 +30,11 @@ export async function middleware(req: NextRequest) {
     }
 
     // Refresh the session - this will set new cookies if the session was expired
-    console.log('Middleware: Refreshing auth session');
-    const { data, error } = await supabase.auth.getSession();
+    // But don't rely on this for redirects - let the client-side auth context handle that
+    await supabase.auth.getSession();
     
-    if (error) {
-      console.error('Middleware: Error refreshing session:', error);
-      return res;
-    }
-    
-    const session = data?.session;
-
-    // Protected routes that require authentication
-    const protectedRoutes = ['/dashboard'];
-    const isProtectedRoute = protectedRoutes.some(route => 
-      req.nextUrl.pathname.startsWith(route)
-    );
-
-    // Authentication routes that should redirect to dashboard if already logged in
-    const authRoutes = ['/signin', '/signup'];
-    const isAuthRoute = authRoutes.some(route => 
-      req.nextUrl.pathname.startsWith(route)
-    );
-
-    // Redirect if accessing protected route without session
-    if (isProtectedRoute && !session) {
-      const redirectUrl = new URL('/signin', req.url);
-      redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Redirect if accessing auth routes with active session
-    if (isAuthRoute && session) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
+    // Just return the response with the refreshed session cookies
+    // The client-side auth context will handle redirects based on auth state
     return res;
   } catch (error) {
     console.error('Middleware error:', error);

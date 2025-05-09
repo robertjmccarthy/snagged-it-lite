@@ -1,32 +1,23 @@
+'use client';
+
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Mark this page as statically optimized
-export const dynamic = 'force-static';
-
-export default async function Home() {
-  // Server-side authentication check
-  let session = null;
+export default function Home() {
+  const { user, loading } = useAuth();
   
-  try {
-    const supabase = createServerSupabaseClient();
-    const { data } = await supabase.auth.getSession();
-    session = data.session;
-    
-    // If user is already logged in, redirect to dashboard
-    if (session) {
-      redirect('/dashboard');
+  // Client-side redirect if user is authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      window.location.href = '/dashboard';
     }
-  } catch (error) {
-    console.error('Error checking authentication:', error);
-    // Continue rendering the page without authentication
-  }
+  }, [user, loading]);
 
   return (
     <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={!!session} />
+      <Navigation isAuthenticated={!!user} />
       
       <div className="container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-4xl text-center">
