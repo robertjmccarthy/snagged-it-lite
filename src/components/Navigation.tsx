@@ -16,25 +16,17 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     try {
       setIsLoggingOut(true);
-      console.log('Navigation: Signing out');
+      console.log('Navigation: Redirecting to sign-out page');
       
-      // First clear local state
-      await signOut();
-      
-      // Wait a brief moment to ensure state is cleared
-      setTimeout(() => {
-        // Force a hard navigation to ensure cookies are properly cleared
-        console.log('Navigation: Redirecting to sign-in page');
-        window.location.replace('/signin');
-      }, 100);
+      // Navigate to the dedicated sign-out page that handles the entire process
+      window.location.href = '/signout';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Error navigating to sign-out page:', error);
       setIsLoggingOut(false);
     }
-    // Note: We don't set isLoggingOut to false here as we're navigating away
   };
 
   return (
