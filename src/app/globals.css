@@ -3,90 +3,167 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 249, 250, 251;
-  --background-end-rgb: 255, 255, 255;
+  --background: #ffffff;
+  --foreground: #333333;
+  --primary: #FFD44D;
+  --primary-hover: #F2C94C;
+  --accent: #f0f9ff;
+  --gray-light: #f3f4f6;
+  --gray: #9ca3af;
+  --gray-dark: #4b5563;
+  --max-width: 1200px;
+  --border-radius: 8px;
+  --header-height: 80px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 15, 23, 42;
-    --background-end-rgb: 30, 41, 59;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 77, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(255, 212, 77, 0);
   }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
   min-height: 100vh;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 1rem;
   }
 
   h1 {
-    @apply text-3xl font-bold md:text-4xl;
+    @apply text-4xl md:text-5xl lg:text-6xl;
   }
 
   h2 {
-    @apply text-2xl font-bold md:text-3xl;
+    @apply text-2xl md:text-3xl lg:text-4xl;
   }
 
   h3 {
-    @apply text-xl font-bold md:text-2xl;
+    @apply text-xl md:text-2xl;
   }
 
   h4 {
-    @apply text-lg font-bold md:text-xl;
+    @apply text-lg md:text-xl;
   }
 
   p {
-    @apply my-2;
+    @apply mb-4;
+  }
+
+  a:not(.btn):not(.menu-item) {
+    @apply text-success hover:text-success-hover transition-colors duration-200 underline hover:no-underline;
   }
 }
 
 @layer components {
+  .container {
+    @apply w-full max-w-container mx-auto px-6 md:px-8 lg:px-10;
+  }
+
   .btn {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center px-6 py-3 font-semibold rounded-pill transition-all duration-200 cursor-pointer shadow-sm border-none text-foreground;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-500;
+    @apply bg-primary hover:bg-primary-hover active:animate-ripple;
   }
 
   .btn-secondary {
-    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus-visible:ring-secondary-500;
+    @apply bg-gray-light hover:bg-gray-200 active:animate-ripple;
   }
 
   .btn-outline {
-    @apply border border-gray-300 bg-transparent hover:bg-gray-100 focus-visible:ring-gray-500;
+    @apply border border-gray bg-transparent hover:bg-gray-light;
+  }
+
+  .btn-dark {
+    @apply bg-gray-900 text-white hover:bg-gray-800;
   }
 
   .input {
-    @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm;
+    @apply w-full py-3 px-4 border border-gray rounded focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-background transition-all duration-200;
   }
 
   .input-error {
-    @apply border-error focus:border-error focus:ring-error;
+    @apply border-error focus:border-error focus:ring-error/20;
   }
 
   .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-gray-dark mb-1;
   }
 
   .form-error {
     @apply mt-1 text-sm text-error;
   }
 
-  .container {
-    @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  .card {
+    @apply rounded overflow-hidden;
+  }
+
+  .highlight {
+    @apply bg-highlight-yellow bg-no-repeat bg-[length:100%_0.3em] bg-[position:0_88%] px-1 inline box-decoration-clone relative z-10 rounded-[0.1em_0.2em] rotate-[-0.4deg];
+  }
+
+  .highlight-pink {
+    @apply bg-highlight-pink;
+  }
+
+  .highlight-green {
+    @apply bg-highlight-green rotate-[-0.1deg];
+  }
+
+  .animate-fade-in {
+    @apply animate-fadeIn;
+  }
+
+  .animate-slide-in {
+    @apply animate-slideIn;
+  }
+
+  .animate-slide-in-right {
+    @apply animate-slideInRight;
   }
 }

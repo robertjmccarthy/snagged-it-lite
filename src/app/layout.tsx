@@ -1,18 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter, Poppins } from 'next/font/google';
+import { Inter as GeistSans } from 'next/font/google';
+import { JetBrains_Mono as GeistMono } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import './globals.css';
 
-const inter = Inter({ 
+const sans = GeistSans({ 
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
   display: 'swap',
 });
 
-const poppins = Poppins({
+const mono = GeistMono({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
+  variable: '--font-geist-mono',
   display: 'swap',
 });
 
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${poppins.variable} font-sans`}>
+      <body className={`${sans.variable} ${mono.variable} font-sans`}>
         <AuthProvider>
           {children}
         </AuthProvider>
