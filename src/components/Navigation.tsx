@@ -20,15 +20,21 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
     try {
       setIsLoggingOut(true);
       console.log('Navigation: Signing out');
+      
+      // First clear local state
       await signOut();
       
-      // Force a hard navigation to ensure cookies are properly cleared
-      window.location.href = '/signin';
+      // Wait a brief moment to ensure state is cleared
+      setTimeout(() => {
+        // Force a hard navigation to ensure cookies are properly cleared
+        console.log('Navigation: Redirecting to sign-in page');
+        window.location.replace('/signin');
+      }, 100);
     } catch (error) {
       console.error('Error signing out:', error);
-    } finally {
       setIsLoggingOut(false);
     }
+    // Note: We don't set isLoggingOut to false here as we're navigating away
   };
 
   return (

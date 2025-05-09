@@ -14,12 +14,15 @@ function DashboardContent() {
     const verifyAuth = async () => {
       console.log('Dashboard: Checking authentication status');
       
-      // Check if user is authenticated using our AuthContext
-      const isAuthenticated = await checkAuth();
+      if (loading) {
+        // Wait for the initial auth state to resolve
+        return;
+      }
       
-      if (!isAuthenticated) {
+      // Check if user is authenticated using our AuthContext
+      if (!user) {
         console.log('Dashboard: Not authenticated, redirecting to sign-in');
-        window.location.href = '/signin';
+        window.location.replace('/signin');
         return;
       }
       
@@ -28,7 +31,7 @@ function DashboardContent() {
     };
 
     verifyAuth();
-  }, [checkAuth, user]);
+  }, [loading, user]);
 
   if (loading || localLoading) {
     return (
@@ -63,9 +66,11 @@ function DashboardLoading() {
 
 // Main component with Suspense boundary
 export default function Dashboard() {
+  const { user } = useAuth();
+  
   return (
     <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={true} />
+      <Navigation isAuthenticated={!!user} />
       <Suspense fallback={<DashboardLoading />}>
         <DashboardContent />
       </Suspense>

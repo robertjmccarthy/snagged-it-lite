@@ -182,13 +182,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
+      console.log('AuthContext: Starting sign out process');
+      
+      // First set user to null in our local state
+      setUser(null);
+      
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut({
+        // Force the session to be invalidated on the server
+        scope: 'global'
+      });
+      
       if (error) {
         console.error('Sign out error:', error);
         setError(error.message);
-      } else {
-        setUser(null);
+        return;
       }
+      
+      console.log('AuthContext: Successfully signed out');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An unknown error occurred';
       console.error('Sign out exception:', errorMsg);
