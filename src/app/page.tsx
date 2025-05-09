@@ -3,6 +3,9 @@ import Navigation from '@/components/Navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
+// Mark this page as statically optimized
+export const dynamic = 'force-static';
+
 export default async function Home() {
   // Server-side authentication check
   let session = null;

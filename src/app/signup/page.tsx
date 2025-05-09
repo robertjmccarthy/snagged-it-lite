@@ -1,15 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import AuthForm, { SignUpFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
 
-export default function SignUp() {
+// Component to handle the actual sign-up logic with searchParams
+function SignUpContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectedFrom = searchParams.get('redirectedFrom');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // User is already signed in, redirect to dashboard
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        console.error('Error checking session:', err);
+        // Don't set error here, just continue with the sign-up page
+      }
+    };
+    
+    checkSession();
+  }, [router]);
 
   const handleSignUp = async (data: SignUpFormData) => {
     try {
@@ -70,17 +91,35 @@ export default function SignUp() {
   };
 
   return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <AuthForm
+        type="signup"
+        onSubmit={handleSignUp}
+        isLoading={isLoading}
+        error={error}
+      />
+    </div>
+  );
+}
+
+// Loading fallback for the Suspense boundary
+function SignUpLoading() {
+  return (
+    <div className="flex flex-1 items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function SignUp() {
+  return (
     <main className="flex min-h-screen flex-col">
       <Navigation isAuthenticated={false} />
       
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-        <AuthForm
-          type="signup"
-          onSubmit={handleSignUp}
-          isLoading={isLoading}
-          error={error}
-        />
-      </div>
+      <Suspense fallback={<SignUpLoading />}>
+        <SignUpContent />
+      </Suspense>
     </main>
   );
 }

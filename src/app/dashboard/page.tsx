@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import Navigation from '@/components/Navigation';
 
-export default function Dashboard() {
+// Component to handle the actual dashboard logic
+function DashboardContent() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -43,69 +44,43 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col">
-        <Navigation isAuthenticated={true} />
-        <div className="flex flex-1 items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-        </div>
-      </main>
+      <div className="flex flex-1 items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
     );
   }
 
   return (
+    <div className="flex flex-1 flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-4">Welcome to your Dashboard</h1>
+        <p className="mb-2">You are signed in as:</p>
+        <div className="bg-gray-100 p-3 rounded mb-4">
+          <p className="font-medium">{user?.email}</p>
+        </div>
+        <p className="text-gray-600 mb-6">This is where you'll manage your projects and issues.</p>
+      </div>
+    </div>
+  );
+}
+
+// Loading fallback for the Suspense boundary
+function DashboardLoading() {
+  return (
+    <div className="flex flex-1 items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function Dashboard() {
+  return (
     <main className="flex min-h-screen flex-col">
       <Navigation isAuthenticated={true} />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Welcome to SnaggedIt Lite</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Your dashboard for tracking home build issues
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-4 text-xl font-bold">Quick Stats</h2>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Total Issues</span>
-                <span className="font-medium">0</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Open Issues</span>
-                <span className="font-medium">0</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Resolved Issues</span>
-                <span className="font-medium">0</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-4 text-xl font-bold">Recent Activity</h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              No recent activity to display.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-4 text-xl font-bold">Quick Actions</h2>
-            <div className="space-y-2">
-              <button className="btn btn-primary w-full">
-                Create New Issue
-              </button>
-              <button className="btn btn-outline w-full">
-                View All Issues
-              </button>
-              <button className="btn btn-outline w-full">
-                Generate Report
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={<DashboardLoading />}>
+        <DashboardContent />
+      </Suspense>
     </main>
   );
 }

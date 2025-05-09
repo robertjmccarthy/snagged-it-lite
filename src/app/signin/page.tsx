@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import AuthForm, { SignInFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
 
-export default function SignIn() {
+// Component to handle the actual sign-in logic with searchParams
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectedFrom = searchParams.get('redirectedFrom');
@@ -62,17 +63,35 @@ export default function SignIn() {
   };
 
   return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <AuthForm
+        type="signin"
+        onSubmit={handleSignIn}
+        isLoading={isLoading}
+        error={error}
+      />
+    </div>
+  );
+}
+
+// Loading fallback for the Suspense boundary
+function SignInLoading() {
+  return (
+    <div className="flex flex-1 items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function SignIn() {
+  return (
     <main className="flex min-h-screen flex-col">
       <Navigation isAuthenticated={false} />
       
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-        <AuthForm
-          type="signin"
-          onSubmit={handleSignIn}
-          isLoading={isLoading}
-          error={error}
-        />
-      </div>
+      <Suspense fallback={<SignInLoading />}>
+        <SignInContent />
+      </Suspense>
     </main>
   );
 }
