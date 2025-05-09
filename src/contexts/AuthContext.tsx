@@ -187,11 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // First set user to null in our local state
       setUser(null);
       
-      // Then sign out from Supabase
-      const { error } = await supabase.auth.signOut({
-        // Force the session to be invalidated on the server
-        scope: 'global'
-      });
+      // Then sign out from Supabase (without global scope which causes 403 errors)
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('Sign out error:', error);
@@ -200,6 +197,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       console.log('AuthContext: Successfully signed out');
+      
+      // Clear any localStorage items that might be related to auth
+      try {
+        localStorage.removeItem('supabase.auth.token');
+      } catch (e) {
+        console.log('No localStorage access or item not found');
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An unknown error occurred';
       console.error('Sign out exception:', errorMsg);

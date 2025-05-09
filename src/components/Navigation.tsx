@@ -16,15 +16,19 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     try {
       setIsLoggingOut(true);
-      console.log('Navigation: Redirecting to sign-out page');
+      console.log('Navigation: Signing out');
       
-      // Navigate to the dedicated sign-out page that handles the entire process
-      window.location.href = '/signout';
+      // Call the sign-out function from AuthContext
+      await signOut();
+      
+      // Force a hard navigation to sign-in page
+      console.log('Navigation: Redirecting to sign-in page');
+      window.location.href = '/signin';
     } catch (error) {
-      console.error('Error navigating to sign-out page:', error);
+      console.error('Error signing out:', error);
       setIsLoggingOut(false);
     }
   };
