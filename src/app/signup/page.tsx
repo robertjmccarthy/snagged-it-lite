@@ -79,9 +79,8 @@ function SignUpContent() {
         }
       }
 
-      // Redirect to dashboard on successful sign up
-      router.push('/dashboard');
-      router.refresh();
+      // Force a hard navigation to ensure cookies are properly set
+      window.location.href = '/dashboard';
     } catch (err) {
       console.error('Sign up error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign up. Please try again.');

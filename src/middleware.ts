@@ -2,9 +2,16 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+
 export async function middleware(req: NextRequest) {
   try {
+    // Create a response object that we'll modify and return
     const res = NextResponse.next();
+    
+    // Create Supabase client with middleware helper
     const supabase = createMiddlewareClient({ req, res });
 
     // Check if we have Supabase environment variables
@@ -13,7 +20,7 @@ export async function middleware(req: NextRequest) {
       return res;
     }
 
-    // Refresh session if expired
+    // Refresh the session - this will set new cookies if the session was expired
     const { data } = await supabase.auth.getSession();
     const session = data?.session;
 

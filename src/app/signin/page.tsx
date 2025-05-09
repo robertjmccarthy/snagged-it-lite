@@ -42,7 +42,8 @@ function SignInContent() {
         throw new Error('Authentication is not available. The application is not properly configured.');
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // Sign in with password and set session cookie
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
@@ -51,9 +52,12 @@ function SignInContent() {
         throw new Error(signInError.message);
       }
 
-      // Redirect to the original destination or dashboard on successful sign in
-      router.push(redirectedFrom || '/dashboard');
-      router.refresh();
+      if (!authData.session) {
+        throw new Error('Failed to create session. Please try again.');
+      }
+
+      // Force a hard navigation to ensure cookies are properly set
+      window.location.href = redirectedFrom || '/dashboard';
     } catch (err) {
       console.error('Sign in error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');

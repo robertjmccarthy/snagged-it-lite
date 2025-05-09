@@ -18,9 +18,15 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   const handleSignOut = async () => {
     try {
       setIsLoggingOut(true);
-      await supabase.auth.signOut();
-      router.push('/signin');
-      router.refresh();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        return;
+      }
+      
+      // Force a hard navigation to ensure cookies are properly cleared
+      window.location.href = '/signin';
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {

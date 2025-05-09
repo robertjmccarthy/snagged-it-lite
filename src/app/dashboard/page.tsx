@@ -18,21 +18,29 @@ function DashboardContent() {
     
     const checkUser = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        // Get the current session
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
         const session = data?.session;
         
         if (!session) {
-          // Use replace instead of push to avoid browser history issues
-          router.replace('/signin');
+          // No session found, redirect to sign-in page
+          // Use window.location for a hard navigation to ensure cookies are properly handled
+          window.location.href = '/signin';
           return;
         }
         
+        // Session found, set the user
         setUser(session.user);
         setAuthChecked(true);
       } catch (error) {
         console.error('Error checking authentication:', error);
         // If there's an error with Supabase, redirect to sign-in
-        router.replace('/signin');
+        window.location.href = '/signin';
         return;
       } finally {
         setLoading(false);
@@ -40,7 +48,7 @@ function DashboardContent() {
     };
 
     checkUser();
-  }, [router, authChecked]);
+  }, [authChecked]);
 
   if (loading) {
     return (
