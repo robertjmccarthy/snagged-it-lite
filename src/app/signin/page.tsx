@@ -42,19 +42,25 @@ function SignInContent() {
         throw new Error('Authentication is not available. The application is not properly configured.');
       }
 
-      // Sign in with password and set session cookie
+      console.log('Attempting to sign in with:', { email: data.email });
+
+      // Sign in with password
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
       if (signInError) {
+        console.error('Sign in error from Supabase:', signInError);
         throw new Error(signInError.message);
       }
 
       if (!authData.session) {
+        console.error('No session returned from Supabase');
         throw new Error('Failed to create session. Please try again.');
       }
+
+      console.log('Sign in successful, session created');
 
       // Force a hard navigation to ensure cookies are properly set
       window.location.href = redirectedFrom || '/dashboard';

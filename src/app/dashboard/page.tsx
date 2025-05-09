@@ -18,27 +18,35 @@ function DashboardContent() {
     
     const checkUser = async () => {
       try {
+        console.log('Dashboard: Checking authentication status');
+        
         // Get the current session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
+          console.error('Dashboard: Error getting session:', error);
           throw error;
         }
+        
+        console.log('Dashboard: Session data received:', data ? 'Session exists' : 'No session');
         
         const session = data?.session;
         
         if (!session) {
+          console.log('Dashboard: No session found, redirecting to sign-in');
           // No session found, redirect to sign-in page
           // Use window.location for a hard navigation to ensure cookies are properly handled
           window.location.href = '/signin';
           return;
         }
         
+        console.log('Dashboard: User authenticated:', session.user.email);
+        
         // Session found, set the user
         setUser(session.user);
         setAuthChecked(true);
       } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error('Dashboard: Error checking authentication:', error);
         // If there's an error with Supabase, redirect to sign-in
         window.location.href = '/signin';
         return;

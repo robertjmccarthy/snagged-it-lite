@@ -3,7 +3,16 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    '/((?!_next/static|_next/image|favicon\.ico|public).*)',
+  ],
 };
 
 export async function middleware(req: NextRequest) {
@@ -21,7 +30,14 @@ export async function middleware(req: NextRequest) {
     }
 
     // Refresh the session - this will set new cookies if the session was expired
-    const { data } = await supabase.auth.getSession();
+    console.log('Middleware: Refreshing auth session');
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Middleware: Error refreshing session:', error);
+      return res;
+    }
+    
     const session = data?.session;
 
     // Protected routes that require authentication
