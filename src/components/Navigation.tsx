@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 
@@ -11,7 +10,6 @@ interface NavigationProps {
 }
 
 export default function Navigation({ isAuthenticated }: NavigationProps) {
-  const router = useRouter();
   const { signOut } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,52 +28,62 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   };
 
   return (
-    <nav className="bg-white shadow-sm dark:bg-gray-800">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
+    <header className="py-4 border-b border-gray-100 bg-white">
+      <div className="container">
+        <div className="flex items-center justify-between">
+          <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
-                SnaggedIt Lite
-              </span>
+              <Image 
+                src="/logo.svg" 
+                alt="SnaggedIt Logo" 
+                width={140} 
+                height={35} 
+                priority
+                className="py-1"
+              />
             </Link>
           </div>
 
           {/* Desktop navigation */}
-          <div className="hidden md:block">
-            <div className="flex items-center space-x-4">
-              {isAuthenticated ? (
-                <>
-                  <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    disabled={isLoggingOut}
-                    className="btn btn-outline"
-                    aria-label="Sign out"
-                  >
-                    {isLoggingOut ? 'Signing out...' : 'Sign out'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/signin" className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
+                  Dashboard
+                </Link>
+                <Link href="/projects" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
+                  Projects
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="btn btn-outline rounded-pill py-2 px-4 text-sm font-medium"
+                  aria-label="Sign out"
+                >
+                  {isLoggingOut ? 'Signing out...' : 'Sign out'}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/signin">
+                  <button className="btn btn-outline rounded-pill py-2 px-5 text-sm font-medium whitespace-nowrap">
                     Sign in
-                  </Link>
-                  <Link href="/signup" className="btn btn-primary">
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <button className="btn btn-primary rounded-pill py-2 px-5 text-sm font-medium whitespace-nowrap">
                     Sign up
-                  </Link>
-                </>
-              )}
-            </div>
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
           <div className="flex md:hidden">
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 dark:hover:bg-gray-700"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-dark hover:text-primary hover:bg-gray-50 focus:outline-none transition-colors duration-200"
               aria-controls="mobile-menu"
               aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -109,34 +117,43 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
       </div>
 
       {/* Mobile menu, show/hide based on menu state */}
-      <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden`} id="mobile-menu">
-        <div className="space-y-1 px-2 pb-3 pt-2">
+      <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden border-t border-gray-100 mt-3 animate-fade-in`} id="mobile-menu">
+        <div className="container py-3">
           {isAuthenticated ? (
-            <>
-              <Link href="/dashboard" className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400">
+            <div className="flex flex-col space-y-3">
+              <Link href="/dashboard" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
                 Dashboard
               </Link>
-              <button
-                onClick={handleSignOut}
-                disabled={isLoggingOut}
-                className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400"
-                aria-label="Sign out"
-              >
-                {isLoggingOut ? 'Signing out...' : 'Sign out'}
-              </button>
-            </>
+              <Link href="/projects" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
+                Projects
+              </Link>
+              <div className="pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="btn btn-outline rounded-pill py-2 px-4 text-sm font-medium w-full mt-2"
+                  aria-label="Sign out"
+                >
+                  {isLoggingOut ? 'Signing out...' : 'Sign out'}
+                </button>
+              </div>
+            </div>
           ) : (
-            <>
-              <Link href="/signin" className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400">
-                Sign in
+            <div className="flex flex-col space-y-3 py-2">
+              <Link href="/signin" className="block">
+                <button className="btn btn-outline rounded-pill py-2 px-4 text-sm font-medium w-full">
+                  Sign in
+                </button>
               </Link>
-              <Link href="/signup" className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400">
-                Sign up
+              <Link href="/signup" className="block">
+                <button className="btn btn-primary rounded-pill py-2 px-4 text-sm font-medium w-full">
+                  Sign up
+                </button>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

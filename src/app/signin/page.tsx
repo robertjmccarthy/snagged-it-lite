@@ -51,13 +51,20 @@ function SignInContent() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <AuthForm
-        type="signin"
-        onSubmit={handleSignIn}
-        isLoading={isLoading}
-        error={error}
-      />
+    <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in">
+      <div className="container max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4">Welcome back</h1>
+          <p className="text-gray-dark">Sign in to continue documenting and tracking your home build issues.</p>
+        </div>
+        
+        <AuthForm
+          type="signin"
+          onSubmit={handleSignIn}
+          isLoading={isLoading}
+          error={error}
+        />
+      </div>
     </div>
   );
 }

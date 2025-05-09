@@ -56,24 +56,33 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
   };
 
   return (
-    <div className="w-full max-w-md space-y-8">
-      <div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-          {isSignUp ? 'Create your account' : 'Sign in to your account'}
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+    <div className="w-full space-y-6">
+      {!isSignUp && (
+        <p className="text-center text-gray-dark">
+          Don't have an account?{' '}
           <Link
-            href={isSignUp ? '/signin' : '/signup'}
-            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+            href="/signup"
+            className="text-success hover:text-success-hover transition-colors duration-200"
           >
-            {isSignUp ? 'Sign in' : 'Sign up'}
+            Sign up
           </Link>
         </p>
-      </div>
+      )}
+      
+      {isSignUp && (
+        <p className="text-center text-gray-dark">
+          Already have an account?{' '}
+          <Link
+            href="/signin"
+            className="text-success hover:text-success-hover transition-colors duration-200"
+          >
+            Sign in
+          </Link>
+        </p>
+      )}
 
       {error && (
-        <div className="rounded-md bg-error/10 p-4">
+        <div className="rounded-md bg-error/10 p-4 border border-error/20">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-error" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -81,17 +90,16 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-error">Authentication error</h3>
-              <div className="mt-2 text-sm text-error">{error}</div>
+              <div className="text-sm text-error">{error}</div>
             </div>
           </div>
         </div>
       )}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        <div className="space-y-4 rounded-md">
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <div className="space-y-4">
           {isSignUp && (
-            <div>
+            <div className="space-y-2">
               <label htmlFor="fullName" className="form-label">
                 Full Name
               </label>
@@ -100,7 +108,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
                 type="text"
                 autoComplete="name"
                 className={`input ${formErrors.fullName ? 'input-error' : ''}`}
-                placeholder="Full name"
+                placeholder="Your full name"
                 {...register('fullName')}
                 aria-invalid={formErrors.fullName ? 'true' : 'false'}
               />
@@ -108,7 +116,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
             </div>
           )}
 
-          <div>
+          <div className="space-y-2">
             <label htmlFor="email" className="form-label">
               Email address
             </label>
@@ -118,24 +126,36 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
               autoComplete="email"
               required
               className={`input ${formErrors.email ? 'input-error' : ''}`}
-              placeholder="Email address"
+              placeholder="you@example.com"
               {...register('email')}
               aria-invalid={formErrors.email ? 'true' : 'false'}
             />
             {formErrors.email && <p className="form-error">{formErrors.email.message}</p>}
           </div>
 
-          <div>
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              {!isSignUp && (
+                <div className="text-sm">
+                  <Link
+                    href="/forgot-password"
+                    className="text-success hover:text-success-hover transition-colors duration-200"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
+            </div>
             <input
               id="password"
               type="password"
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
               required
               className={`input ${formErrors.password ? 'input-error' : ''}`}
-              placeholder="Password"
+              placeholder="••••••••"
               {...register('password')}
               aria-invalid={formErrors.password ? 'true' : 'false'}
             />
@@ -143,7 +163,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
           </div>
 
           {isSignUp && (
-            <div>
+            <div className="space-y-2">
               <label htmlFor="confirmPassword" className="form-label">
                 Confirm Password
               </label>
@@ -153,7 +173,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
                 autoComplete="new-password"
                 required
                 className={`input ${formErrors.confirmPassword ? 'input-error' : ''}`}
-                placeholder="Confirm password"
+                placeholder="••••••••"
                 {...register('confirmPassword')}
                 aria-invalid={formErrors.confirmPassword ? 'true' : 'false'}
               />
@@ -164,29 +184,16 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
           )}
         </div>
 
-        {!isSignUp && (
-          <div className="flex items-center justify-end">
-            <div className="text-sm">
-              <Link
-                href="/forgot-password"
-                className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-          </div>
-        )}
-
-        <div>
+        <div className="pt-4">
           <button
             type="submit"
             disabled={isLoading}
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full py-3"
             aria-label={isSignUp ? 'Sign up' : 'Sign in'}
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="greenHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BBF2D8" />
+      <stop offset="100%" stop-color="#BBF2D8" />
+    </linearGradient>
+  </defs>
+  <g>
+    <!-- Highlight background that only covers part of the text height -->
+    <rect x="10" y="22" width="115" height="9" fill="url(#greenHighlight)" />
+    <!-- Text on top of the highlight -->
+    <text x="10" y="28" font-family="Arial, sans-serif" font-weight="bold" font-size="24" letter-spacing="-0.5" fill="black">SnaggedIt</text>
+  </g>
+</svg>

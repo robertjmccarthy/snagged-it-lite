@@ -51,13 +51,20 @@ function SignUpContent() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <AuthForm
-        type="signup"
-        onSubmit={handleSignUp}
-        isLoading={isLoading}
-        error={error}
-      />
+    <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in">
+      <div className="container max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4">Create your account</h1>
+          <p className="text-gray-dark">Sign up to start documenting and tracking your home build issues.</p>
+        </div>
+        
+        <AuthForm
+          type="signup"
+          onSubmit={handleSignUp}
+          isLoading={isLoading}
+          error={error}
+        />
+      </div>
     </div>
   );
 }
@@ -66,7 +73,7 @@ function SignUpContent() {
 function SignUpLoading() {
   return (
     <div className="flex flex-1 items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>
   );
 }
