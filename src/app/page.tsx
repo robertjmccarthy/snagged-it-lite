@@ -5,12 +5,20 @@ import { redirect } from 'next/navigation';
 
 export default async function Home() {
   // Server-side authentication check
-  const supabase = createServerSupabaseClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  let session = null;
   
-  // If user is already logged in, redirect to dashboard
-  if (session) {
-    redirect('/dashboard');
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data } = await supabase.auth.getSession();
+    session = data.session;
+    
+    // If user is already logged in, redirect to dashboard
+    if (session) {
+      redirect('/dashboard');
+    }
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    // Continue rendering the page without authentication
   }
 
   return (

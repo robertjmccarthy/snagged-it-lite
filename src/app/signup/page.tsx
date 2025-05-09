@@ -16,6 +16,11 @@ export default function SignUp() {
       setIsLoading(true);
       setError(null);
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw new Error('Authentication is not available. The application is not properly configured.');
+      }
+
       // Create the user account
       const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
         email: data.email,
@@ -33,18 +38,23 @@ export default function SignUp() {
 
       // Create a profile record in the profiles table
       if (signUpData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: signUpData.user.id,
-            email: data.email,
-            full_name: data.fullName || null,
-          });
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: signUpData.user.id,
+              email: data.email,
+              full_name: data.fullName || null,
+            });
 
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          // We don't throw here to avoid blocking the signup process
-          // The profile can be created later when the user logs in
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+            // We don't throw here to avoid blocking the signup process
+            // The profile can be created later when the user logs in
+          }
+        } catch (profileErr) {
+          console.error('Error creating profile:', profileErr);
+          // Continue with the signup process even if profile creation fails
         }
       }
 

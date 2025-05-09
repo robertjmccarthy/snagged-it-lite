@@ -12,15 +12,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          router.push('/signin');
+          return;
+        }
+        
+        setUser(session.user);
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        // If there's an error with Supabase, redirect to sign-in
         router.push('/signin');
         return;
+      } finally {
+        setLoading(false);
       }
-      
-      setUser(session.user);
-      setLoading(false);
     };
 
     checkUser();

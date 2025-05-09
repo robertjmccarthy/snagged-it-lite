@@ -16,6 +16,11 @@ export default function SignIn() {
       setIsLoading(true);
       setError(null);
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw new Error('Authentication is not available. The application is not properly configured.');
+      }
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
