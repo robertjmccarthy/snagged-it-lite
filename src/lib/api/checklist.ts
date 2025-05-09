@@ -321,6 +321,134 @@ export async function getSnagCountForCategory(userId: string, categorySlug: stri
   return count || 0;
 }
 
+// Get all snags for a user with checklist item details
+export async function getAllUserSnags(userId: string): Promise<any[]> {
+  try {
+    debug.log(`Fetching all snags for user ${userId}`);
+    
+    // Basic query without nested relations
+    const { data, error } = await supabase
+      .from('snags')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      debug.error('Error fetching all user snags:', error);
+      throw error;
+    }
+
+    // If we have snags, fetch the checklist items separately
+    if (data && data.length > 0) {
+      // Get all unique checklist item IDs
+      const checklistItemIds = Array.from(new Set(data.map(snag => snag.checklist_item_id)));
+      
+      // Fetch checklist items
+      const { data: checklistItems, error: itemsError } = await supabase
+        .from('checklist_items')
+        .select('*, checklist_categories:category_id(id, name, slug)')
+        .in('id', checklistItemIds);
+      
+      if (itemsError) {
+        debug.error('Error fetching checklist items:', itemsError);
+      } else if (checklistItems) {
+        // Add checklist item details to each snag
+        data.forEach(snag => {
+          const item = checklistItems.find(item => item.id === snag.checklist_item_id);
+          if (item) {
+            snag.checklist_item = item;
+            snag.category = item.checklist_categories;
+          }
+        });
+      }
+    }
+
+    debug.log(`Found ${data?.length || 0} snags for user ${userId}`);
+    return data || [];
+  } catch (error) {
+    debug.error('Error in getAllUserSnags function:', error);
+    throw error;
+  }
+}
+
+// Get a specific snag by ID with checklist item details
+export async function getSnagById(userId: string, snagId: string): Promise<any> {
+  try {
+    debug.log(`Fetching snag ${snagId} for user ${userId}`);
+    
+    // Basic query to get the snag
+    const { data, error } = await supabase
+      .from('snags')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('id', snagId)
+      .single();
+
+    if (error) {
+      debug.error(`Error fetching snag ${snagId}:`, error);
+      throw error;
+    }
+
+    if (data) {
+      // Fetch the checklist item details
+      const { data: checklistItem, error: itemError } = await supabase
+        .from('checklist_items')
+        .select('*, checklist_categories:category_id(id, name, slug)')
+        .eq('id', data.checklist_item_id)
+        .single();
+      
+      if (itemError) {
+        debug.error(`Error fetching checklist item for snag ${snagId}:`, itemError);
+      } else if (checklistItem) {
+        // Add checklist item details to the snag
+        data.checklist_item = checklistItem;
+        data.category = checklistItem.checklist_categories;
+      }
+    }
+
+    debug.log(`Found snag ${snagId}:`, data);
+    return data;
+  } catch (error) {
+    debug.error('Error in getSnagById function:', error);
+    throw error;
+  }
+}
+
+// Update an existing snag
+export async function updateSnag(
+  userId: string,
+  snagId: string,
+  note: string | null,
+  photoUrl: string | null
+): Promise<any> {
+  try {
+    debug.log(`Updating snag ${snagId} for user ${userId}`);
+    
+    const { data, error } = await supabase
+      .from('snags')
+      .update({
+        note,
+        photo_url: photoUrl,
+        // Don't update created_at to preserve the original timestamp
+      })
+      .eq('user_id', userId)
+      .eq('id', snagId)
+      .select()
+      .single();
+
+    if (error) {
+      debug.error(`Error updating snag ${snagId}:`, error);
+      throw error;
+    }
+
+    debug.log(`Successfully updated snag ${snagId}`);
+    return data;
+  } catch (error) {
+    debug.error('Error in updateSnag function:', error);
+    throw error;
+  }
+}
+
 // Upload a photo to Supabase Storage
 export async function uploadSnagPhoto(userId: string, file: File): Promise<string> {
   try {

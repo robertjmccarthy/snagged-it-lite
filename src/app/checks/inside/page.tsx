@@ -175,7 +175,7 @@ export default function InsideChecksPage() {
                   </p>
                   <div className="mt-4 space-y-3">
                     <Link 
-                      href="/snags" 
+                      href="/snags/summary" 
                       className="w-full btn btn-primary rounded-pill py-3 flex items-center justify-center"
                     >
                       <span className="flex items-center">

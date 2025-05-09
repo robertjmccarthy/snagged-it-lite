@@ -148,7 +148,7 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
   }
 
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="flex min-h-screen flex-col overflow-x-hidden">
       <Navigation isAuthenticated={!!user} />
       
       <div className="flex flex-1 flex-col p-6 animate-fade-in">
@@ -254,7 +254,7 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
                     </span>
                   ) : (
                     <span className="flex items-center">
-                      {stepIndex === totalSteps ? "Finish outside checks" : "Continue with no snags"}
+                      {stepIndex === totalSteps ? "Finish outside checks" : "Continue"}
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                       </svg>

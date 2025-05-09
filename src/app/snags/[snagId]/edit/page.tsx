@@ -6,19 +6,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { debug } from '@/lib/debug';
-import { 
-  getChecklistItemByOrder,
-  createSnag,
-  uploadSnagPhoto
-} from '@/lib/api/checklist';
+import { getSnagById, updateSnag, uploadSnagPhoto } from '@/lib/api/checklist';
 
-interface SnagEntryPageProps {
+interface EditSnagPageProps {
   params: {
-    stepIndex: string;
+    snagId: string;
   };
 }
 
-export default function NewSnagPage({ params }: SnagEntryPageProps) {
+export default function EditSnagPage({ params }: EditSnagPageProps) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -26,61 +22,60 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
   const [note, setNote] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [checklistItem, setChecklistItem] = useState<any>(null);
+  const [originalPhotoUrl, setOriginalPhotoUrl] = useState<string | null>(null);
+  const [snag, setSnag] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const stepIndex = parseInt(params.stepIndex, 10);
-  // Hard-coded maximum of 40 steps for inside checks
-  const MAX_STEPS = 40;
-  const isValidStep = !isNaN(stepIndex) && stepIndex > 0 && stepIndex <= MAX_STEPS;
+  const snagId = params.snagId;
 
-  // Protect the route and load checklist item
+  // Protect the route and load snag data
   useEffect(() => {
-    async function initializeSnagEntry() {
+    async function initializeSnagEdit() {
       if (!loading) {
         if (!user) {
-          debug.error('New Snag: Not authenticated, redirecting to sign-in');
+          debug.error('Edit Snag: Not authenticated, redirecting to sign-in');
           router.replace('/signin');
           return;
         }
 
-        if (!isValidStep) {
-          debug.error(`Invalid step index: ${stepIndex}, redirecting to inside checks`);
-          router.replace('/checks/inside');
-          return;
-        }
-
         try {
-          // Get the checklist item for this step
-          debug.log(`Fetching checklist item for step ${stepIndex}`);
-          const item = await getChecklistItemByOrder('inside', stepIndex);
+          // Get the snag data
+          debug.log(`Fetching snag ${snagId} for editing`);
+          const snagData = await getSnagById(user.id, snagId);
           
-          if (!item) {
-            debug.error(`Checklist item not found for step ${stepIndex}, redirecting to inside checks`);
-            router.replace('/checks/inside');
+          if (!snagData) {
+            debug.error(`Snag not found with ID ${snagId}, redirecting to summary`);
+            router.replace('/snags/summary');
             return;
           }
           
-          debug.log(`Found checklist item for step ${stepIndex}:`, item);
-          setChecklistItem(item);
+          debug.log(`Found snag for editing:`, snagData);
+          setSnag(snagData);
+          setNote(snagData.note || '');
+          
+          if (snagData.photo_url) {
+            setPhotoPreview(snagData.photo_url);
+            setOriginalPhotoUrl(snagData.photo_url);
+          }
+          
           setIsLoading(false);
         } catch (error) {
-          debug.error('Error initializing snag entry:', error);
-          setError('Failed to load checklist item. Please try again.');
+          debug.error('Error initializing snag edit:', error);
+          setError('Failed to load snag data. Please try again.');
           setIsLoading(false);
         }
       }
     }
 
-    initializeSnagEntry();
-  }, [user, loading, router, stepIndex, isValidStep]);
+    initializeSnagEdit();
+  }, [user, loading, router, snagId]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    debug.log('Photo file selected:', { 
+    debug.log('New photo file selected:', { 
       name: file.name, 
       type: file.type, 
       size: `${(file.size / 1024).toFixed(2)} KB` 
@@ -108,7 +103,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
-      debug.log('Photo preview created');
+      debug.log('New photo preview created');
       setPhotoPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
@@ -123,6 +118,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
   const handleRemovePhoto = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
+    setOriginalPhotoUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -131,15 +127,15 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !checklistItem) {
-      debug.error('Cannot submit: user or checklist item is missing', { 
+    if (!user || !snag) {
+      debug.error('Cannot submit: user or snag is missing', { 
         hasUser: !!user, 
-        hasChecklistItem: !!checklistItem 
+        hasSnag: !!snag 
       });
       return;
     }
     
-    if (!note && !photoFile) {
+    if (!note && !photoPreview) {
       const errorMsg = 'Please add a note or upload a photo';
       debug.error(errorMsg);
       setError(errorMsg);
@@ -148,44 +144,43 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
 
     setIsSaving(true);
     setError(null);
-    debug.log('Starting snag submission process', { 
-      stepIndex, 
-      checklistItemId: checklistItem.id,
-      hasPhoto: !!photoFile,
+    debug.log('Starting snag update process', { 
+      snagId, 
+      hasNewPhoto: !!photoFile,
       hasNote: !!note.trim()
     });
 
     try {
-      let photoUrl = null;
+      let photoUrl = originalPhotoUrl;
       
-      // Upload photo if one was selected
+      // Upload new photo if one was selected
       if (photoFile) {
-        debug.log('Uploading photo...');
+        debug.log('Uploading new photo...');
         try {
           photoUrl = await uploadSnagPhoto(user.id, photoFile);
-          debug.log('Photo uploaded successfully', { photoUrl });
+          debug.log('New photo uploaded successfully', { photoUrl });
         } catch (photoError) {
           debug.error('Photo upload failed, continuing with note only', photoError);
           // Continue with just the note if photo upload fails
         }
       }
 
-      // Create the snag
-      debug.log('Creating snag record...');
-      await createSnag(
+      // Update the snag
+      debug.log('Updating snag record...');
+      await updateSnag(
         user.id,
-        checklistItem.id,
+        snagId,
         note.trim() || null,
         photoUrl
       );
-      debug.log('Snag created successfully');
+      debug.log('Snag updated successfully');
 
-      // Navigate back to the step page
-      debug.log(`Navigating back to step page: /checks/inside/${stepIndex}`);
-      router.push(`/checks/inside/${stepIndex}`);
+      // Navigate back to the summary page
+      debug.log('Navigating back to summary page');
+      router.push('/snags/summary');
     } catch (error) {
-      debug.error('Error saving snag:', error);
-      setError('Failed to save snag. Please try again.');
+      debug.error('Error updating snag:', error);
+      setError('Failed to update snag. Please try again.');
       setIsSaving(false);
     }
   };
@@ -201,7 +196,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     );
   }
 
-  if (error && !note && !photoFile) {
+  if (error && !note && !photoPreview) {
     return (
       <main className="flex min-h-screen flex-col overflow-x-hidden">
         <Navigation isAuthenticated={!!user} />
@@ -216,8 +211,8 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
                 </div>
                 <h1 className="text-xl font-bold mb-4">Error</h1>
                 <p className="mb-6 text-gray-dark">{error}</p>
-                <Link href={`/checks/inside/${stepIndex}`} className="btn btn-primary rounded-pill py-2 px-6">
-                  Go Back
+                <Link href="/snags/summary" className="btn btn-primary rounded-pill py-2 px-6">
+                  Go Back to Summary
                 </Link>
               </div>
             </div>
@@ -234,9 +229,9 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
         <div className="container mx-auto max-w-4xl">
           <div className="mb-6 flex items-center">
             <Link 
-              href={`/checks/inside/${stepIndex}`} 
+              href="/snags/summary" 
               className="text-gray-dark hover:text-primary transition-colors flex items-center"
-              aria-label="Back to check"
+              aria-label="Back to snag summary"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -247,21 +242,20 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-xl md:text-2xl font-bold">Add a Snag</h1>
-              <div className="bg-primary/10 text-sm font-medium text-primary px-3 py-1 rounded-full">
-                Step {stepIndex}
-              </div>
+              <h1 className="text-xl md:text-2xl font-bold">Edit Snag</h1>
             </div>
             
-            <div className="bg-primary/10 rounded-lg p-6 mb-8 border border-primary/10">
-              <h2 className="font-semibold mb-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-primary">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Check this:
-              </h2>
-              <p className="text-lg">{checklistItem?.friendly_text}</p>
-            </div>
+            {snag && (
+              <div className="bg-primary/10 rounded-lg p-6 mb-8 border border-primary/10">
+                <h2 className="font-semibold mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-primary">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Check item:
+                </h2>
+                <p className="text-lg">{snag.checklist_item?.friendly_text || 'Unknown item'}</p>
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
@@ -271,7 +265,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
               )}
               
               <div>
-                <label htmlFor="note" className="block font-medium mb-2">Note (optional)</label>
+                <label htmlFor="note" className="block font-medium mb-2">Note</label>
                 <textarea
                   id="note"
                   value={note}
@@ -283,7 +277,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
               </div>
               
               <div>
-                <label className="block font-medium mb-2">Photo (optional)</label>
+                <label className="block font-medium mb-2">Photo</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -331,7 +325,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
               
               <div className="flex justify-between pt-4">
                 <Link
-                  href={`/checks/inside/${stepIndex}`}
+                  href="/snags/summary"
                   className="btn btn-outline rounded-pill px-6 py-2"
                 >
                   Cancel
@@ -352,7 +346,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
                     </span>
                   ) : (
                     <span className="flex items-center">
-                      Save Snag
+                      Save Changes
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
