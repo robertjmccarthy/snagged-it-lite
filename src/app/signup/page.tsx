@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import AuthForm, { SignUpFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
 
@@ -11,73 +11,34 @@ function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectedFrom = searchParams.get('redirectedFrom');
+  const { user, loading, error: authError, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Check if user is already authenticated
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          // User is already signed in, redirect to dashboard
-          router.push('/dashboard');
-        }
-      } catch (err) {
-        console.error('Error checking session:', err);
-        // Don't set error here, just continue with the sign-up page
-      }
-    };
-    
-    checkSession();
-  }, [router]);
+    if (user) {
+      // User is already signed in, redirect to dashboard
+      console.log('User already authenticated, redirecting to dashboard');
+      window.location.href = '/dashboard';
+    }
+  }, [user]);
 
   const handleSignUp = async (data: SignUpFormData) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        throw new Error('Authentication is not available. The application is not properly configured.');
+      console.log('Attempting to sign up with:', { email: data.email });
+
+      // Use the signUp function from AuthContext
+      const result = await signUp(data.email, data.password, data.fullName);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to sign up');
       }
 
-      // Create the user account
-      const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.fullName || null,
-          },
-        },
-      });
-
-      if (signUpError) {
-        throw new Error(signUpError.message);
-      }
-
-      // Create a profile record in the profiles table
-      if (signUpData.user) {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: signUpData.user.id,
-              email: data.email,
-              full_name: data.fullName || null,
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            // We don't throw here to avoid blocking the signup process
-            // The profile can be created later when the user logs in
-          }
-        } catch (profileErr) {
-          console.error('Error creating profile:', profileErr);
-          // Continue with the signup process even if profile creation fails
-        }
-      }
+      console.log('Sign up successful, redirecting');
 
       // Force a hard navigation to ensure cookies are properly set
       window.location.href = '/dashboard';

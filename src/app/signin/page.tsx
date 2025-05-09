@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import AuthForm, { SignInFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
 
@@ -11,56 +11,34 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectedFrom = searchParams.get('redirectedFrom');
+  const { user, loading, error: authError, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Check if user is already authenticated
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          // User is already signed in, redirect to dashboard or the original destination
-          router.push(redirectedFrom || '/dashboard');
-        }
-      } catch (err) {
-        console.error('Error checking session:', err);
-        // Don't set error here, just continue with the sign-in page
-      }
-    };
-    
-    checkSession();
-  }, [router, redirectedFrom]);
+    if (user) {
+      // User is already signed in, redirect to dashboard or the original destination
+      console.log('User already authenticated, redirecting');
+      window.location.href = redirectedFrom || '/dashboard';
+    }
+  }, [user, redirectedFrom]);
 
   const handleSignIn = async (data: SignInFormData) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        throw new Error('Authentication is not available. The application is not properly configured.');
-      }
-
       console.log('Attempting to sign in with:', { email: data.email });
 
-      // Sign in with password
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (signInError) {
-        console.error('Sign in error from Supabase:', signInError);
-        throw new Error(signInError.message);
+      // Use the signIn function from AuthContext
+      const result = await signIn(data.email, data.password);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to sign in');
       }
 
-      if (!authData.session) {
-        console.error('No session returned from Supabase');
-        throw new Error('Failed to create session. Please try again.');
-      }
-
-      console.log('Sign in successful, session created');
+      console.log('Sign in successful, redirecting');
 
       // Force a hard navigation to ensure cookies are properly set
       window.location.href = redirectedFrom || '/dashboard';

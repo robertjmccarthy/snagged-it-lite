@@ -2,63 +2,35 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 
 // Component to handle the actual dashboard logic
 function DashboardContent() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
+  const { user, loading, error, checkAuth } = useAuth();
+  const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    // Prevent multiple redirects
-    if (authChecked) return;
-    
-    const checkUser = async () => {
-      try {
-        console.log('Dashboard: Checking authentication status');
-        
-        // Get the current session
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Dashboard: Error getting session:', error);
-          throw error;
-        }
-        
-        console.log('Dashboard: Session data received:', data ? 'Session exists' : 'No session');
-        
-        const session = data?.session;
-        
-        if (!session) {
-          console.log('Dashboard: No session found, redirecting to sign-in');
-          // No session found, redirect to sign-in page
-          // Use window.location for a hard navigation to ensure cookies are properly handled
-          window.location.href = '/signin';
-          return;
-        }
-        
-        console.log('Dashboard: User authenticated:', session.user.email);
-        
-        // Session found, set the user
-        setUser(session.user);
-        setAuthChecked(true);
-      } catch (error) {
-        console.error('Dashboard: Error checking authentication:', error);
-        // If there's an error with Supabase, redirect to sign-in
+    const verifyAuth = async () => {
+      console.log('Dashboard: Checking authentication status');
+      
+      // Check if user is authenticated using our AuthContext
+      const isAuthenticated = await checkAuth();
+      
+      if (!isAuthenticated) {
+        console.log('Dashboard: Not authenticated, redirecting to sign-in');
         window.location.href = '/signin';
         return;
-      } finally {
-        setLoading(false);
       }
+      
+      console.log('Dashboard: User authenticated:', user?.email);
+      setLocalLoading(false);
     };
 
-    checkUser();
-  }, [authChecked]);
+    verifyAuth();
+  }, [checkAuth, user]);
 
-  if (loading) {
+  if (loading || localLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>

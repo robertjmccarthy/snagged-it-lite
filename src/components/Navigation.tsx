@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -12,18 +12,15 @@ interface NavigationProps {
 
 export default function Navigation({ isAuthenticated }: NavigationProps) {
   const router = useRouter();
+  const { signOut } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
       setIsLoggingOut(true);
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Error signing out:', error);
-        return;
-      }
+      console.log('Navigation: Signing out');
+      await signOut();
       
       // Force a hard navigation to ensure cookies are properly cleared
       window.location.href = '/signin';
