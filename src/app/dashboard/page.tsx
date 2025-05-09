@@ -9,22 +9,29 @@ export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
+    // Prevent multiple redirects
+    if (authChecked) return;
+    
     const checkUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        const session = data?.session;
         
         if (!session) {
-          router.push('/signin');
+          // Use replace instead of push to avoid browser history issues
+          router.replace('/signin');
           return;
         }
         
         setUser(session.user);
+        setAuthChecked(true);
       } catch (error) {
         console.error('Error checking authentication:', error);
         // If there's an error with Supabase, redirect to sign-in
-        router.push('/signin');
+        router.replace('/signin');
         return;
       } finally {
         setLoading(false);
@@ -32,7 +39,7 @@ export default function Dashboard() {
     };
 
     checkUser();
-  }, [router]);
+  }, [router, authChecked]);
 
   if (loading) {
     return (

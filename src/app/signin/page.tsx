@@ -1,15 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import AuthForm, { SignInFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
 
 export default function SignIn() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectedFrom = searchParams.get('redirectedFrom');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // User is already signed in, redirect to dashboard or the original destination
+          router.push(redirectedFrom || '/dashboard');
+        }
+      } catch (err) {
+        console.error('Error checking session:', err);
+        // Don't set error here, just continue with the sign-in page
+      }
+    };
+    
+    checkSession();
+  }, [router, redirectedFrom]);
 
   const handleSignIn = async (data: SignInFormData) => {
     try {
@@ -30,8 +50,8 @@ export default function SignIn() {
         throw new Error(signInError.message);
       }
 
-      // Redirect to dashboard on successful sign in
-      router.push('/dashboard');
+      // Redirect to the original destination or dashboard on successful sign in
+      router.push(redirectedFrom || '/dashboard');
       router.refresh();
     } catch (err) {
       console.error('Sign in error:', err);
