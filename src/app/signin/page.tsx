@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import AuthForm from '@/components/AuthForm';
+import AuthForm, { SignInFormData } from '@/components/AuthForm';
 import Navigation from '@/components/Navigation';
-import { SignInFormData } from '@/types/auth';
 
 export default function SignIn() {
   const router = useRouter();
