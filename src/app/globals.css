@@ -5,14 +5,18 @@
 :root {
   --background: #ffffff;
   --foreground: #333333;
-  --primary: #FFD44D;
-  --primary-hover: #F2C94C;
+  --primary: #85E0A3;
+  --primary-hover: #6BC288;
+  --dark-green: #31593E;
   --accent: #f0f9ff;
   --gray-light: #f3f4f6;
+  --gray-lighter: #EDEFEC;
   --gray: #9ca3af;
   --gray-dark: #4b5563;
   --max-width: 1200px;
   --border-radius: 8px;
+  --border-radius-xl: 16px;
+  --border-radius-2xl: 1rem;
   --header-height: 80px;
 }
 
@@ -101,11 +105,11 @@ body {
 
 @layer components {
   .container {
-    @apply w-full max-w-container mx-auto px-6 md:px-8 lg:px-10;
+    @apply w-full max-w-container mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 font-semibold rounded-pill transition-all duration-200 cursor-pointer shadow-sm border-none text-foreground;
+    @apply inline-flex items-center justify-center px-5 py-2 font-semibold rounded-pill transition-colors duration-200 cursor-pointer border-none text-foreground;
   }
 
   .btn-primary {
@@ -113,19 +117,23 @@ body {
   }
 
   .btn-secondary {
-    @apply bg-gray-light hover:bg-gray-200 active:animate-ripple;
+    @apply bg-gray-light hover:bg-gray-lighter active:animate-ripple;
   }
 
   .btn-outline {
-    @apply border border-gray bg-transparent hover:bg-gray-light;
+    @apply bg-gray-lighter hover:bg-gray-light text-gray-dark border-none;
   }
 
   .btn-dark {
-    @apply bg-gray-900 text-white hover:bg-gray-800;
+    @apply bg-dark-green text-white hover:bg-opacity-90;
+  }
+
+  .btn-text {
+    @apply bg-transparent hover:bg-gray-lighter text-foreground p-2 rounded-md;
   }
 
   .input {
-    @apply w-full py-3 px-4 border border-gray rounded focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-background transition-all duration-200;
+    @apply w-full py-3 px-4 border border-gray rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-background transition-all duration-200;
   }
 
   .input-error {
@@ -141,7 +149,19 @@ body {
   }
 
   .card {
-    @apply rounded overflow-hidden;
+    @apply rounded-2xl shadow-lg overflow-hidden bg-white;
+  }
+
+  .feature-card {
+    @apply p-6 rounded-2xl bg-white;
+  }
+
+  .feature-icon {
+    @apply flex h-16 w-16 items-center justify-center rounded-full p-4 mb-4 bg-gray-light;
+  }
+
+  .menu-item {
+    @apply text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200 text-foreground hover:bg-gray-lighter;
   }
 
   .highlight {
@@ -166,5 +186,13 @@ body {
 
   .animate-slide-in-right {
     @apply animate-slideInRight;
+  }
+
+  .section-title {
+    @apply text-4xl font-bold text-gray-900 mb-6;
+  }
+
+  .section-text {
+    @apply text-xl text-gray-700 max-w-2xl mb-8;
   }
 }

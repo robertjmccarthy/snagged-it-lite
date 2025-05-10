@@ -8,14 +8,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // SnaggedIt color palette from prototype
-        primary: '#FFD44D',
-        'primary-hover': '#F2C94C',
+        // SnaggedIt updated color palette
+        primary: '#85E0A3',
+        'primary-hover': '#6BC288',
+        'dark-green': '#31593E',
         accent: '#f0f9ff',
         background: '#ffffff',
         foreground: '#333333',
         gray: {
-          light: '#f3f4f6',
+          light: '#f3f4f6',  // Light grey background
+          lighter: '#EDEFEC', // Hover background for nav items
           DEFAULT: '#9ca3af',
           dark: '#4b5563',
         },

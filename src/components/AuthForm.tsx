@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { Button } from '@/components';
 
 // Form validation schema
 const signInSchema = z.object({
@@ -185,10 +186,12 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
         </div>
 
         <div className="pt-4">
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={isLoading}
-            className="btn btn-primary w-full py-3"
+            fullWidth
+            size="lg"
             aria-label={isSignUp ? 'Sign up' : 'Sign in'}
           >
             {isLoading ? (
@@ -202,7 +205,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
             ) : (
               <>{isSignUp ? 'Sign up' : 'Sign in'}</>
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

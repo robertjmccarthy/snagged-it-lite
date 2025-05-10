@@ -4,13 +4,13 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthForm, { SignUpFormData } from '@/components/AuthForm';
-import Navigation from '@/components/Navigation';
+import { Layout, Section, Card } from '@/components';
 
 // Component to handle the actual sign-up logic with searchParams
 function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get('redirectedFrom');
+  const redirectedFrom = searchParams.get('redirectedFrom') || null;
   const { user, loading, error: authError, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,21 +51,23 @@ function SignUpContent() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in">
+    <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
       <div className="container max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-4">Create your account</h1>
-          <p className="text-gray-dark">Sign up to start documenting and tracking your home build issues.</p>
-        </div>
-        
-        <AuthForm
-          type="signup"
-          onSubmit={handleSignUp}
-          isLoading={isLoading}
-          error={error}
-        />
+        <Card className="p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-4">Create your account</h1>
+            <p className="text-gray-dark">Sign up to start documenting and tracking your home build issues.</p>
+          </div>
+          
+          <AuthForm
+            type="signup"
+            onSubmit={handleSignUp}
+            isLoading={isLoading}
+            error={error}
+          />
+        </Card>
       </div>
-    </div>
+    </Section>
   );
 }
 
@@ -81,12 +83,10 @@ function SignUpLoading() {
 // Main component with Suspense boundary
 export default function SignUp() {
   return (
-    <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={false} />
-      
+    <Layout>
       <Suspense fallback={<SignUpLoading />}>
         <SignUpContent />
       </Suspense>
-    </main>
+    </Layout>
   );
 }
