@@ -36,8 +36,8 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               <Image 
                 src="/logo.svg" 
                 alt="SnaggedIt Logo" 
-                width={140} 
-                height={35} 
+                width={182} 
+                height={46} 
                 priority
                 className="py-1"
               />
@@ -48,13 +48,13 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
           <div className="hidden md:flex items-center space-x-2">
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard" className="menu-item text-sm font-medium px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+                <Link href="/dashboard" className="menu-item text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                   Dashboard
                 </Link>
                 <button
                   onClick={handleSignOut}
                   disabled={isLoggingOut}
-                  className="menu-item text-sm font-medium px-3 py-2 rounded-pill transition-colors duration-200"
+                  className="menu-item text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200"
                   style={{ color: '#333333', border: 'none', background: 'transparent', cursor: 'pointer' }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
@@ -65,18 +65,18 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </>
             ) : (
               <>
-                <Link href="/features" className="menu-item text-sm font-medium px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+                <Link href="/features" className="menu-item text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                   Features
                 </Link>
-                <Link href="/pricing" className="menu-item text-sm font-medium px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+                <Link href="/pricing" className="menu-item text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                   Pricing
                 </Link>
-                <Link href="/signin" className="menu-item text-sm font-medium px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+                <Link href="/signin" className="menu-item text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                   Sign in
                 </Link>
                 <Link href="/signup">
                   <button 
-                    className="btn rounded-pill py-2 px-5 text-sm font-medium whitespace-nowrap active:animate-ripple transition-colors duration-200" 
+                    className="btn rounded-pill py-2 px-5 text-sm font-semibold whitespace-nowrap active:animate-ripple transition-colors duration-200" 
                     style={{ backgroundColor: '#85E0A3', color: '#333333' }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#6BC288'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#85E0A3'}
@@ -131,14 +131,14 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
         <div className="container py-3">
           {isAuthenticated ? (
             <div className="flex flex-col space-y-3">
-              <Link href="/dashboard" className="menu-item block py-2 text-sm font-medium rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+              <Link href="/dashboard" className="menu-item block py-2 text-sm font-semibold rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                 Dashboard
               </Link>
               <div className="pt-2 border-t border-gray-200">
                 <button
                   onClick={handleSignOut}
                   disabled={isLoggingOut}
-                  className="menu-item text-sm font-medium py-2 px-3 rounded-pill transition-colors duration-200 w-full mt-2 text-left"
+                  className="menu-item text-sm font-semibold py-2 px-3 rounded-pill transition-colors duration-200 w-full mt-2 text-left"
                   style={{ color: '#333333', border: 'none', background: 'transparent', cursor: 'pointer' }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}  
@@ -150,19 +150,19 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
             </div>
           ) : (
             <div className="flex flex-col space-y-3 py-2">
-              <Link href="/features" className="menu-item block py-2 text-sm font-medium rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+              <Link href="/features" className="menu-item block py-2 text-sm font-semibold rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                 Features
               </Link>
-              <Link href="/pricing" className="menu-item block py-2 text-sm font-medium rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+              <Link href="/pricing" className="menu-item block py-2 text-sm font-semibold rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                 Pricing
               </Link>
-              <Link href="/signin" className="menu-item block py-2 text-sm font-medium rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+              <Link href="/signin" className="menu-item block py-2 text-sm font-semibold rounded-pill px-3 transition-colors duration-200" style={{ color: '#333333' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EDEFEC'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                 Sign in
               </Link>
               <div className="pt-2 border-t border-gray-200 mt-2">
                 <Link href="/signup" className="block mt-3">
                   <button 
-                    className="btn rounded-pill py-2 px-4 text-sm font-medium w-full active:animate-ripple transition-colors duration-200" 
+                    className="btn rounded-pill py-2 px-4 text-sm font-semibold w-full active:animate-ripple transition-colors duration-200" 
                     style={{ backgroundColor: '#85E0A3', color: '#333333' }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#6BC288'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#85E0A3'}
