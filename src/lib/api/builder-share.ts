@@ -1,29 +1,14 @@
-import { supabase as clientSupabase } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { debug } from '@/lib/debug';
-import { createClient } from '@supabase/supabase-js';
 
 // Determine if we're in a server environment (API routes, getServerSideProps, etc.)
 const isServer = typeof window === 'undefined';
 
-// Initialize the appropriate Supabase client based on the environment
-let supabase: ReturnType<typeof createClient>;
-
+// Log which client we're using
 if (isServer) {
-  // Server-side: Use service role key for privileged operations
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
-  // Check for missing environment variables
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment');
-  }
-  
-  // Create a Supabase client with the service role key for server operations
-  supabase = createClient(supabaseUrl, supabaseServiceKey);
   debug.log('Using server-side Supabase client with service role key');
 } else {
-  // Client-side: Use the public client
-  supabase = clientSupabase;
   debug.log('Using client-side Supabase client');
 }
 
@@ -56,7 +41,10 @@ export async function createBuilderShare(
   
   debug.log('Creating builder share record', { userId, builderName, builderEmail });
   
-  const { data, error } = await supabase
+  // Use the appropriate client based on the environment
+  const client = isServer ? supabaseAdmin : supabase;
+  
+  const { data, error } = await client
     .from('builder_shares')
     .insert({
       user_id: userId,
@@ -73,7 +61,7 @@ export async function createBuilderShare(
   }
   
   debug.log('Builder share record created successfully', data);
-  return data;
+  return data as BuilderShareData;
 }
 
 /**
@@ -85,9 +73,12 @@ export async function getLatestBuilderShare(userId: string): Promise<BuilderShar
   
   debug.log('Fetching latest builder share record for user', userId);
   
+  // Use the appropriate client based on the environment
+  const client = isServer ? supabaseAdmin : supabase;
+  
   try {
     // First try to get the record with single() which expects exactly one result
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('builder_shares')
       .select('*')
       .eq('user_id', userId)
@@ -106,7 +97,7 @@ export async function getLatestBuilderShare(userId: string): Promise<BuilderShar
     }
     
     debug.log('Builder share record fetched successfully', data);
-    return data;
+    return data as BuilderShareData;
   } catch (error: any) {
     debug.error('Exception fetching builder share record:', error);
     // Return null instead of throwing to make the function more robust
@@ -127,7 +118,10 @@ export async function updateBuilderShare(
   
   debug.log('Updating builder share record', { shareId, updateData });
   
-  const { data, error } = await supabase
+  // Use the appropriate client based on the environment
+  const client = isServer ? supabaseAdmin : supabase;
+  
+  const { data, error } = await client
     .from('builder_shares')
     .update(updateData)
     .eq('id', shareId)
@@ -140,7 +134,7 @@ export async function updateBuilderShare(
   }
   
   debug.log('Builder share record updated successfully', data);
-  return data;
+  return data as BuilderShareData;
 }
 
 /**
@@ -175,7 +169,10 @@ export async function getTotalSnagCount(userId: string): Promise<number> {
   
   debug.log('Fetching total snag count for user', userId);
   
-  const { count, error } = await supabase
+  // Use the appropriate client based on the environment
+  const client = isServer ? supabaseAdmin : supabase;
+  
+  const { count, error } = await client
     .from('snags')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId);
