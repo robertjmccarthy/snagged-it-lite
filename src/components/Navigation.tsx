@@ -62,6 +62,12 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </>
             ) : (
               <>
+                <Link href="/features" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
+                  Features
+                </Link>
+                <Link href="/pricing" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
+                  Pricing
+                </Link>
                 <Link href="/signin">
                   <button className="btn btn-outline rounded-pill py-2 px-5 text-sm font-medium whitespace-nowrap">
                     Sign in
@@ -134,16 +140,24 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
             </div>
           ) : (
             <div className="flex flex-col space-y-3 py-2">
-              <Link href="/signin" className="block">
-                <button className="btn btn-outline rounded-pill py-2 px-4 text-sm font-medium w-full">
-                  Sign in
-                </button>
+              <Link href="/features" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
+                Features
               </Link>
-              <Link href="/signup" className="block">
-                <button className="btn btn-primary rounded-pill py-2 px-4 text-sm font-medium w-full">
-                  Sign up
-                </button>
+              <Link href="/pricing" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
+                Pricing
               </Link>
+              <div className="pt-2 border-t border-gray-100">
+                <Link href="/signin" className="block mt-2">
+                  <button className="btn btn-outline rounded-pill py-2 px-4 text-sm font-medium w-full">
+                    Sign in
+                  </button>
+                </Link>
+                <Link href="/signup" className="block mt-3">
+                  <button className="btn btn-primary rounded-pill py-2 px-4 text-sm font-medium w-full">
+                    Sign up
+                  </button>
+                </Link>
+              </div>
             </div>
           )}
         </div>
