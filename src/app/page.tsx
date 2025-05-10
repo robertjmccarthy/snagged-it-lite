@@ -27,7 +27,7 @@ export default function Home() {
             {/* Left column - Hero text */}
             <div className="w-full md:w-1/2 md:pr-8 lg:pr-16 mb-12 md:mb-0">
               <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-foreground">
-                <span className="block">Check your new home like you own it</span>
+                <span className="block">Check your new home, like you own it</span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-dark font-light mb-8 max-w-2xl">
                 SnaggedIt helps you document, track, and resolve issues during home construction and renovation projects.
