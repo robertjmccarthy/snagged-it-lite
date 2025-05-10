@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
@@ -9,13 +9,9 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { getAllUserSnags } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
 
-export default function SnagSummaryPage() {
-  const router = useRouter();
+// Success message component with Suspense boundary
+function SuccessMessage() {
   const searchParams = useSearchParams();
-  const { user, loading } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [snags, setSnags] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [showSharedSuccess, setShowSharedSuccess] = useState(false);
   
   // Check for shared=true query parameter
@@ -27,6 +23,28 @@ export default function SnagSummaryPage() {
       }
     }
   }, [searchParams]);
+  
+  if (!showSharedSuccess) return null;
+  
+  return (
+    <div className="bg-success/10 text-success rounded-lg p-4 border border-success/20 mb-6 flex items-start">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <p className="font-medium">Snag list shared successfully!</p>
+        <p className="text-sm">Your builder has been notified and will receive a copy of your snag list.</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SnagSummaryPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [snags, setSnags] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Protect the route and load snags
   useEffect(() => {
@@ -101,17 +119,9 @@ export default function SnagSummaryPage() {
           </div>
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
-            {showSharedSuccess && (
-              <div className="bg-success/10 text-success rounded-lg p-4 border border-success/20 mb-6 flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p className="font-medium">Snag list shared successfully!</p>
-                  <p className="text-sm">Your builder has been notified and will receive a copy of your snag list.</p>
-                </div>
-              </div>
-            )}
+            <Suspense fallback={null}>
+              <SuccessMessage />
+            </Suspense>
             
             <header className="mb-8">
               <div className="flex items-center justify-between mb-4">
