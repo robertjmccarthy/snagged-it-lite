@@ -38,6 +38,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 alt="SnaggedIt Logo" 
                 width={140} 
                 height={35} 
+                priority
                 className="py-1"
               />
             </Link>

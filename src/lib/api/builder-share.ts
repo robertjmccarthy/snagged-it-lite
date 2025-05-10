@@ -1,16 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
-import { supabaseAdmin } from '@/lib/supabase/admin';
 import { debug } from '@/lib/debug';
-
-// Determine if we're in a server environment (API routes, getServerSideProps, etc.)
-const isServer = typeof window === 'undefined';
-
-// Log which client we're using
-if (isServer) {
-  debug.log('Using server-side Supabase client with service role key');
-} else {
-  debug.log('Using client-side Supabase client');
-}
 
 // Interface for builder share data
 export interface BuilderShareData {
@@ -41,10 +30,7 @@ export async function createBuilderShare(
   
   debug.log('Creating builder share record', { userId, builderName, builderEmail });
   
-  // Use the appropriate client based on the environment
-  const client = isServer ? supabaseAdmin : supabase;
-  
-  const { data, error } = await client
+  const { data, error } = await supabase
     .from('builder_shares')
     .insert({
       user_id: userId,
@@ -61,7 +47,7 @@ export async function createBuilderShare(
   }
   
   debug.log('Builder share record created successfully', data);
-  return data as BuilderShareData;
+  return data;
 }
 
 /**
@@ -73,36 +59,27 @@ export async function getLatestBuilderShare(userId: string): Promise<BuilderShar
   
   debug.log('Fetching latest builder share record for user', userId);
   
-  // Use the appropriate client based on the environment
-  const client = isServer ? supabaseAdmin : supabase;
+  const { data, error } = await supabase
+    .from('builder_shares')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
   
-  try {
-    // First try to get the record with single() which expects exactly one result
-    const { data, error } = await client
-      .from('builder_shares')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no records exist
-    
-    if (error) {
-      debug.error('Error fetching builder share record:', error);
-      throw new Error(`Failed to fetch builder share record: ${error.message}`);
-    }
-    
-    if (!data) {
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // No records found
       debug.log('No builder share records found for user', userId);
       return null;
     }
     
-    debug.log('Builder share record fetched successfully', data);
-    return data as BuilderShareData;
-  } catch (error: any) {
-    debug.error('Exception fetching builder share record:', error);
-    // Return null instead of throwing to make the function more robust
-    return null;
+    debug.error('Error fetching builder share record:', error);
+    throw new Error(`Failed to fetch builder share record: ${error.message}`);
   }
+  
+  debug.log('Builder share record fetched successfully', data);
+  return data;
 }
 
 /**
@@ -118,10 +95,7 @@ export async function updateBuilderShare(
   
   debug.log('Updating builder share record', { shareId, updateData });
   
-  // Use the appropriate client based on the environment
-  const client = isServer ? supabaseAdmin : supabase;
-  
-  const { data, error } = await client
+  const { data, error } = await supabase
     .from('builder_shares')
     .update(updateData)
     .eq('id', shareId)
@@ -134,7 +108,7 @@ export async function updateBuilderShare(
   }
   
   debug.log('Builder share record updated successfully', data);
-  return data as BuilderShareData;
+  return data;
 }
 
 /**
@@ -169,10 +143,7 @@ export async function getTotalSnagCount(userId: string): Promise<number> {
   
   debug.log('Fetching total snag count for user', userId);
   
-  // Use the appropriate client based on the environment
-  const client = isServer ? supabaseAdmin : supabase;
-  
-  const { count, error } = await client
+  const { count, error } = await supabase
     .from('snags')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId);

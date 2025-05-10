@@ -7,8 +7,7 @@ import { useBuilderShare } from '@/contexts/BuilderShareContext';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { debug } from '@/lib/debug';
-import { getTotalSnagCount } from '@/lib/api/builder-share';
-import { stripePromise } from '@/lib/stripe';
+import { getTotalSnagCount, updatePaymentStatus } from '@/lib/api/builder-share';
 
 export default function ConfirmationPage() {
   const router = useRouter();
@@ -68,75 +67,32 @@ export default function ConfirmationPage() {
     loadData();
   }, [loading, user, router, builderName, builderEmail]);
   
-  // Handle checkout redirect
-  const handleCheckout = async () => {
+  // Handle payment and sharing
+  const handlePayAndShare = async () => {
+    if (!user || !currentShareId) {
+      setLocalError('Something went wrong. Please try again.');
+      return;
+    }
+    
+    setIsProcessing(true);
+    setLocalError(null);
+    
     try {
-      setIsProcessing(true);
-      setLocalError(null);
+      // In a real implementation, this would integrate with Stripe or another payment processor
+      // For now, we'll simulate a successful payment
+      debug.log('Processing payment and sharing snag list');
       
-      if (!user) {
-        setLocalError('You must be logged in to make a payment');
-        setIsProcessing(false);
-        return;
-      }
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      console.log('[Client] Creating checkout session…');
-      debug.log('Creating checkout session', { userId: user.id, builderName, builderEmail });
+      // Update payment status to 'paid'
+      await updatePaymentStatus(currentShareId, 'paid', 'mock_payment_intent_id');
       
-      // 1. Create checkout session
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: Math.round(SHARE_PRICE * 100), // Convert to pence
-          userId: user.id,
-          builderName,
-          builderEmail,
-          metadata: { userId: user.id, builderName, builderEmail }
-        }),
-      });
-      
-      const responseData = await response.json();
-      console.log('[Client] API response:', responseData);
-      
-      if (!response.ok) {
-        throw new Error(responseData.error || 'API error');
-      }
-      
-      if (!responseData.url) {
-        throw new Error('No session URL returned');
-      }
-      
-      // 2. Redirect directly to Stripe Checkout URL using multiple approaches
-      console.log('[Client] Redirecting to:', responseData.url);
-      debug.log('Redirecting to Stripe Checkout URL');
-      
-      // Approach 1: Direct location change
-      window.location.assign(responseData.url);
-      
-      // Approach 2: Fallback with timeout (in case the first approach doesn't work)
-      setTimeout(() => {
-        console.log('[Client] Fallback redirect attempt');
-        window.location.href = responseData.url;
-      }, 500);
-      
-      // Approach 3: Ultimate fallback - create and submit a form
-      setTimeout(() => {
-        console.log('[Client] Last resort redirect attempt');
-        const form = document.createElement('form');
-        form.method = 'GET';
-        form.action = responseData.url;
-        document.body.appendChild(form);
-        form.submit();
-      }, 1000);
-      
-      return; // Early return to prevent further code execution
-    } catch (error: any) {
-      console.error('[Client] handleCheckout ERROR:', error);
-      debug.error('Checkout error:', error);
-      setLocalError(error.message || 'An unexpected error occurred');
+      // Redirect to summary page with success message
+      router.push('/snags/summary?shared=true');
+    } catch (error) {
+      debug.error('Error processing payment:', error);
+      setLocalError('Failed to process payment. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -244,20 +200,13 @@ export default function ConfirmationPage() {
                 </ul>
               </div>
               
-              {/* Stripe Checkout Button */}
               <div className="pt-4">
-                {localError && (
-                  <div className="bg-error/10 text-error rounded-lg p-4 border border-error/20 mb-4">
-                    {localError}
-                  </div>
-                )}
-                
                 <button
                   type="button"
-                  onClick={handleCheckout}
-                  disabled={isProcessing || !user}
+                  onClick={handlePayAndShare}
+                  disabled={isProcessing || shareLoading}
                   className="w-full btn btn-primary rounded-pill py-3"
-                  aria-label="Continue to payment"
+                  aria-label="Continue to pay and share your snag list"
                 >
                   {isProcessing ? (
                     <span className="flex items-center justify-center">
@@ -265,11 +214,11 @@ export default function ConfirmationPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Processing...
+                      Processing payment...
                     </span>
                   ) : (
                     <span className="flex items-center justify-center">
-                      Continue to pay £{SHARE_PRICE.toFixed(2)} and share your snag list
+                      Continue to pay and share your snag list
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                       </svg>
