@@ -1,11 +1,29 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { updatePaymentStatus } from '@/lib/api/builder-share';
 import { debug } from '@/lib/debug';
 
+// Initialize Supabase with server-side credentials
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Check for missing environment variables
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment');
+}
+
+// Create a Supabase client with the service role key for server operations
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
 // Initialize Stripe with your secret key
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+// Check for missing Stripe secret key
+if (!stripeSecretKey) {
+  throw new Error('Missing STRIPE_SECRET_KEY in environment');
+}
+
 const stripe = new Stripe(stripeSecretKey);
 
 export async function POST(request: Request) {

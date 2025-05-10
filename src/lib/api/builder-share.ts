@@ -1,5 +1,31 @@
-import { supabase } from '@/lib/supabase/client';
+import { supabase as clientSupabase } from '@/lib/supabase/client';
 import { debug } from '@/lib/debug';
+import { createClient } from '@supabase/supabase-js';
+
+// Determine if we're in a server environment (API routes, getServerSideProps, etc.)
+const isServer = typeof window === 'undefined';
+
+// Initialize the appropriate Supabase client based on the environment
+let supabase: ReturnType<typeof createClient>;
+
+if (isServer) {
+  // Server-side: Use service role key for privileged operations
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  // Check for missing environment variables
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment');
+  }
+  
+  // Create a Supabase client with the service role key for server operations
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+  debug.log('Using server-side Supabase client with service role key');
+} else {
+  // Client-side: Use the public client
+  supabase = clientSupabase;
+  debug.log('Using client-side Supabase client');
+}
 
 // Interface for builder share data
 export interface BuilderShareData {
