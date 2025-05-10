@@ -38,7 +38,6 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 alt="SnaggedIt Logo" 
                 width={140} 
                 height={35} 
-                priority
                 className="py-1"
               />
             </Link>
@@ -50,9 +49,6 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               <>
                 <Link href="/dashboard" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
                   Dashboard
-                </Link>
-                <Link href="/projects" className="text-gray-dark hover:text-primary transition-colors duration-200 px-3 py-2">
-                  Projects
                 </Link>
                 <button
                   onClick={handleSignOut}
@@ -123,9 +119,6 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
             <div className="flex flex-col space-y-3">
               <Link href="/dashboard" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
                 Dashboard
-              </Link>
-              <Link href="/projects" className="block py-2 text-base font-medium text-gray-dark hover:text-primary transition-colors duration-200">
-                Projects
               </Link>
               <div className="pt-2 border-t border-gray-100">
                 <button

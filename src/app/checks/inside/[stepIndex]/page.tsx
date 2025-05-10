@@ -118,7 +118,8 @@ export default function InsideCheckStep({ params }: StepPageProps) {
       if (stepIndex === MAX_STEPS || stepIndex === totalSteps) {
         debug.log('This is the last step, marking inside checks as complete');
         await updateUserProgress(user.id, 'inside', stepIndex, true);
-        router.push('/snags/summary'); // Navigate to snags summary
+        debug.log('Redirecting to dashboard after completing inside checks');
+        router.push('/dashboard'); // Always redirect to dashboard instead of snags summary
       } else {
         // Otherwise, go to the next step
         debug.log(`Moving to next step: ${stepIndex + 1}`);

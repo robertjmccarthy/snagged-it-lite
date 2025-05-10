@@ -44,6 +44,11 @@ function ResetPasswordContent() {
   });
 
   useEffect(() => {
+    if (!searchParams) {
+      setError('Invalid or missing reset token. Please request a new password reset link.');
+      return;
+    }
+    
     // Check if we have the necessary parameters from the reset email
     const token = searchParams.get('token');
     const access_token = searchParams.get('access_token');

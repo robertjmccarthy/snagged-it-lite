@@ -10,7 +10,7 @@ import Navigation from '@/components/Navigation';
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get('redirectedFrom');
+  const redirectedFrom = searchParams ? searchParams.get('redirectedFrom') : null;
   const { user, loading, error: authError, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

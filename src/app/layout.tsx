@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Poppins } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { BuilderShareProvider } from '@/contexts/BuilderShareContext';
 import './globals.css';
 
 const inter = Inter({ 
@@ -35,7 +36,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} font-sans`}>
         <AuthProvider>
-          {children}
+          <BuilderShareProvider>
+            {children}
+          </BuilderShareProvider>
         </AuthProvider>
       </body>
     </html>

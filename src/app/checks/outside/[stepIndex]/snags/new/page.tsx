@@ -9,7 +9,9 @@ import { debug } from '@/lib/debug';
 import { 
   getChecklistItemByOrder,
   createSnag,
-  uploadSnagPhoto
+  uploadSnagPhoto,
+  getChecklistItemCount,
+  updateUserProgress
 } from '@/lib/api/checklist';
 
 interface SnagEntryPageProps {
@@ -138,49 +140,49 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     }
     
     if (!note && !photoFile) {
-      const errorMsg = 'Please add a note or upload a photo';
-      debug.error(errorMsg);
-      setError(errorMsg);
+      setError('Please add a note or photo to describe the issue');
       return;
     }
-
+    
     setIsSaving(true);
     setError(null);
-    debug.log('Starting snag submission process', { 
-      stepIndex, 
-      checklistItemId: checklistItem.id,
-      hasPhoto: !!photoFile,
-      hasNote: !!note.trim()
-    });
-
+    
     try {
       let photoUrl = null;
       
-      // Upload photo if one was selected
+      // Upload photo if present
       if (photoFile) {
         debug.log('Uploading photo...');
-        try {
-          photoUrl = await uploadSnagPhoto(user.id, photoFile);
-          debug.log('Photo uploaded successfully', { photoUrl });
-        } catch (photoError) {
-          debug.error('Photo upload failed, continuing with note only', photoError);
-          // Continue with just the note if photo upload fails
-        }
+        photoUrl = await uploadSnagPhoto(user.id, photoFile);
+        debug.log('Photo uploaded successfully:', photoUrl);
       }
-
+      
       // Create the snag
-      debug.log('Creating snag record...');
-      await createSnag(
-        user.id,
-        checklistItem.id,
-        note.trim() || null,
-        photoUrl
-      );
-      debug.log('Snag created successfully');
-
-      // Navigate back to the step page
-      debug.log(`Navigating back to step page: /checks/outside/${stepIndex}`);
-      router.push(`/checks/outside/${stepIndex}`);
+      debug.log('Creating snag for checklist item:', checklistItem.id);
+      const snag = await createSnag(user.id, checklistItem.id, note, photoUrl);
+      debug.log('Snag created successfully:', snag);
+      
+      // Get total number of steps to determine if this is the last step
+      const totalSteps = await getChecklistItemCount('outside');
+      const MAX_STEPS = 18; // Hard-coded maximum of 18 steps for outside checks
+      const isLastStep = stepIndex === totalSteps || stepIndex === MAX_STEPS;
+      
+      if (isLastStep) {
+        // If this is the last step, mark the entire section as complete
+        debug.log('This is the last step, marking outside checks as complete');
+        await updateUserProgress(user.id, 'outside', stepIndex, true);
+        
+        // Redirect to dashboard
+        debug.log('Redirecting to dashboard after saving snag');
+        router.push('/dashboard');
+      } else {
+        // Otherwise, update progress and move to the next step
+        debug.log(`Moving to next step: ${stepIndex + 1} after saving snag`);
+        await updateUserProgress(user.id, 'outside', stepIndex + 1, false);
+        
+        // Redirect to the next step
+        router.push(`/checks/outside/${stepIndex + 1}`);
+      }
     } catch (error) {
       debug.error('Error saving snag:', error);
       setError('Failed to save snag. Please try again.');

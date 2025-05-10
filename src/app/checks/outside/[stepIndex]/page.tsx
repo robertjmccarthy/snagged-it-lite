@@ -114,25 +114,34 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
     try {
       debug.log(`Continue button clicked at step ${stepIndex}, total steps: ${totalSteps}`);
       
-      // If this is the last step, mark the outside checks as complete
-      if (stepIndex === MAX_STEPS || stepIndex === totalSteps) {
+      // Mark this step as complete in user progress
+      const isLastStep = stepIndex === totalSteps || stepIndex === MAX_STEPS;
+      
+      if (isLastStep) {
+        // If this is the last step, mark the entire section as complete
         debug.log('This is the last step, marking outside checks as complete');
         await updateUserProgress(user.id, 'outside', stepIndex, true);
-        router.push('/checks/inside'); // Navigate directly to inside checks landing page
+        
+        // Redirect to dashboard
+        debug.log('Redirecting to dashboard');
+        router.push('/dashboard');
       } else {
-        // Otherwise, go to the next step
+        // Otherwise, update progress and move to the next step
         debug.log(`Moving to next step: ${stepIndex + 1}`);
         await updateUserProgress(user.id, 'outside', stepIndex + 1, false);
+        
+        // Redirect to the next step
         router.push(`/checks/outside/${stepIndex + 1}`);
       }
     } catch (error) {
-      debug.error('Error navigating to next step:', error);
+      debug.error('Error continuing to next step:', error);
       setNavigating(false);
     }
   };
 
   const handleAddSnag = () => {
-    if (!user || !checklistItem) return;
+    // Navigate to the snag creation page for this step
+    debug.log(`Navigating to add snag for step ${stepIndex}`);
     router.push(`/checks/outside/${stepIndex}/snags/new`);
   };
 
