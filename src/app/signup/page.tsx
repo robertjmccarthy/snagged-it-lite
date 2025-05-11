@@ -38,10 +38,10 @@ function SignUpContent() {
         throw new Error(result.error || 'Failed to sign up');
       }
 
-      console.log('Sign up successful, redirecting');
+      console.log('Sign up successful, redirecting to email confirmation page');
 
-      // Force a hard navigation to ensure cookies are properly set
-      window.location.href = '/dashboard';
+      // Redirect to the email confirmation page
+      router.push('/check-your-email');
     } catch (err) {
       console.error('Sign up error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign up. Please try again.');

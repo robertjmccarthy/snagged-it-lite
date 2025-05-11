@@ -52,20 +52,19 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 <Link href="/dashboard" className="menu-item">
                   Dashboard
                 </Link>
-                <Button 
-                  variant="outline" 
+                <button 
                   onClick={handleSignOut} 
                   disabled={isLoggingOut}
                   aria-label="Sign out"
                   className="menu-item"
                 >
                   {isLoggingOut ? 'Signing out...' : 'Sign out'}
-                </Button>
+                </button>
               </>
             ) : (
               <>
                 <Link href="/features" className="menu-item">
-                  Features
+                  How it works
                 </Link>
                 <Link href="/pricing" className="menu-item">
                   Pricing
@@ -130,21 +129,20 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 Dashboard
               </Link>
               <div className="pt-2 border-t border-gray-200">
-                <Button
-                  variant="outline"
+                <button
                   onClick={handleSignOut}
                   disabled={isLoggingOut}
-                  className="menu-item w-full mt-2 text-left"
+                  className="menu-item block mt-2"
                   aria-label="Sign out"
                 >
                   {isLoggingOut ? 'Signing out...' : 'Sign out'}
-                </Button>
+                </button>
               </div>
             </div>
           ) : (
             <div className="flex flex-col space-y-3 py-2">
               <Link href="/features" className="menu-item block">
-                Features
+                How it works
               </Link>
               <Link href="/pricing" className="menu-item block">
                 Pricing
