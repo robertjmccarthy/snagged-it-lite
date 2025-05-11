@@ -74,13 +74,11 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                   Sign in
                 </Link>
                 <Link href="/signup" className="menu-item-container">
-                  <Button 
-                    variant="primary" 
-                    size="md"
-                    className="whitespace-nowrap text-sm py-2 px-5"
+                  <button 
+                    className="btn btn-primary whitespace-nowrap text-sm py-2 px-5"
                   >
                     Sign up
-                  </Button>
+                  </button>
                 </Link>
               </>
             )}
@@ -88,9 +86,9 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
 
           {/* Mobile menu button */}
           <div className="flex md:hidden">
-            <Button
-              variant="outline"
-              className="inline-flex items-center justify-center p-2 rounded-pill text-gray-dark focus:outline-none"
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-2.5 rounded-full bg-gray-200 text-gray-dark hover:bg-gray-300 focus:outline-none"
               aria-controls="mobile-menu"
               aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -118,7 +116,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -156,13 +154,11 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </Link>
               <div className="pt-2 border-t border-gray-200 mt-2">
                 <Link href="/signup" className="block mt-3">
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
-                    className="w-full text-sm py-1 px-3"
+                  <button 
+                    className="btn btn-primary w-full text-sm py-1 px-3"
                   >
                     Sign up
-                  </Button>
+                  </button>
                 </Link>
               </div>
             </div>
