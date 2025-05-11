@@ -77,7 +77,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                   <Button 
                     variant="primary" 
                     size="md"
-                    className="whitespace-nowrap"
+                    className="whitespace-nowrap text-sm py-2 px-5"
                   >
                     Sign up
                   </Button>
@@ -159,7 +159,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    className="w-full"
+                    className="w-full text-sm py-1 px-3"
                   >
                     Sign up
                   </Button>

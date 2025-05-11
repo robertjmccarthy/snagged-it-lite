@@ -109,7 +109,7 @@ body {
   }
 
   .btn {
-    @apply inline-flex items-center justify-center font-semibold rounded-pill transition-colors duration-200 cursor-pointer border-none text-foreground px-5 py-2 text-sm;
+    @apply inline-flex items-center justify-center font-semibold rounded-pill transition-colors duration-200 cursor-pointer border-none text-foreground px-6 py-3 text-base;
   }
 
   .btn-primary {

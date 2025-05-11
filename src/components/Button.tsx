@@ -55,9 +55,9 @@ export default function Button({
   };
   
   const sizeStyles = {
-    sm: 'text-sm py-1 px-3',
-    md: 'text-sm py-2 px-5',
-    lg: 'text-base py-3 px-6'
+    sm: 'text-base py-1 px-3',
+    md: 'text-base py-2 px-5',
+    lg: 'text-lg py-3 px-7'
   };
   
   const widthStyle = fullWidth ? 'w-full' : '';
