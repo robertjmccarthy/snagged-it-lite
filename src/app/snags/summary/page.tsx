@@ -194,6 +194,13 @@ export default function SnagSummaryPage() {
                                 src={snag.photo_url} 
                                 alt="Snag photo" 
                                 className="w-full h-48 md:h-full object-cover"
+                                onError={(e) => {
+                                  console.error('Error loading image:', snag.photo_url);
+                                  // Replace with placeholder on error
+                                  e.currentTarget.onerror = null; // Prevent infinite error loop
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.parentElement?.classList.add('image-error');
+                                }}
                               />
                             ) : (
                               <div className="w-full h-48 md:h-full flex items-center justify-center bg-gray-50 p-4">

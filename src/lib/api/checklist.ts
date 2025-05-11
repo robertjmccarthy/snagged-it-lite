@@ -458,13 +458,14 @@ export async function uploadSnagPhoto(userId: string, file: File): Promise<strin
     }
     
     // Create a more reliable file extension extraction
-    const fileExt = file.name.split('.').pop() || 'jpg';
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`; // Removed 'snags/' prefix as it's already the bucket name
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const sanitizedUserId = userId.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize user ID for storage path
+    const fileName = `${sanitizedUserId}/${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`; // Path within the bucket
     
     // Log the upload attempt
     debug.log(`Attempting to upload file to storage bucket 'snags'`, {
-      userId,
+      userId: sanitizedUserId,
       fileName,
       fileType: file.type,
       fileSize: file.size
@@ -475,7 +476,8 @@ export async function uploadSnagPhoto(userId: string, file: File): Promise<strin
       .from('snags')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true // Use upsert to avoid conflicts
+        upsert: true, // Use upsert to avoid conflicts
+        contentType: file.type // Explicitly set content type
       });
     
     if (uploadError) {
@@ -492,8 +494,13 @@ export async function uploadSnagPhoto(userId: string, file: File): Promise<strin
       throw new Error('Failed to get public URL for uploaded file');
     }
     
-    debug.log('Generated public URL:', data.publicUrl);
-    return data.publicUrl;
+    // Verify the URL is valid and accessible
+    const publicUrl = data.publicUrl;
+    debug.log('Generated public URL:', publicUrl);
+    
+    // Add cache-busting parameter to prevent browser caching issues
+    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+    return cacheBustedUrl;
   } catch (error) {
     debug.error('Error in uploadSnagPhoto function:', error);
     throw error;

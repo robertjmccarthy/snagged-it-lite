@@ -66,9 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state change listener
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
-      if (session) {
+      
+      // Don't automatically sign in on the confirm-email page
+      const isConfirmEmailPage = typeof window !== 'undefined' && 
+        window.location.pathname === '/confirm-email';
+      
+      if (session && !isConfirmEmailPage) {
         setUser(session.user);
-      } else {
+      } else if (!session) {
         setUser(null);
       }
     });
@@ -123,6 +128,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
 
+      // Get the base URL for redirects
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : 'http://localhost:3000';
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -130,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: {
             full_name: fullName || null,
           },
+          emailRedirectTo: `${baseUrl}/confirm-email`,
         },
       });
 
