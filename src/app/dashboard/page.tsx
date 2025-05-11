@@ -203,9 +203,8 @@ function DashboardContent() {
   };
 
   return (
-    <Section background="white" spacing="md" className="animate-fade-in bg-transparent">
+    <Section background="light" spacing="md" className="animate-fade-in bg-transparent">
       <div className="container mx-auto max-w-4xl">
-        <Card className="p-6 md:p-8">
           <header className="text-left mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">Hello homeowner 👋</h1>
           </header>
@@ -296,7 +295,6 @@ function DashboardContent() {
           </div>
           
           {/* How It Works Section removed */}
-        </Card>
       </div>
     </Section>
   );
@@ -317,10 +315,10 @@ export default function Dashboard() {
   
   return (
     <Layout>
-      <div className="fixed inset-0 bg-primary -z-10"></div>
+      <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
       <style jsx global>{`
         body {
-          background-color: #84E0A3;
+          background-color: #BBF2D7;
         }
       `}</style>
       <Suspense fallback={<DashboardLoading />}>
