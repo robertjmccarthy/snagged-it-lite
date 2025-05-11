@@ -317,6 +317,7 @@ export default function Dashboard() {
   
   return (
     <Layout>
+      <div className="fixed inset-0 bg-primary -z-10"></div>
       <style jsx global>{`
         body {
           background-color: #84E0A3;
