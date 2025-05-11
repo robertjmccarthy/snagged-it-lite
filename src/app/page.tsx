@@ -94,7 +94,7 @@ export default function Home() {
           <Card className="p-0">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
               {/* Snag it */}
-              <article className="p-6">
+              <article className="p-6 flex flex-col">
                 <div className="feature-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#6B7280" className="h-8 w-8 text-gray-500" style={{ color: '#6B7280 !important', stroke: '#6B7280' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
@@ -108,7 +108,8 @@ export default function Home() {
               </article>
 
               {/* Send it */}
-              <article className="p-6 border-t md:border-t-0 md:border-l border-gray-100">
+              <article className="p-6 flex flex-col relative border-t border-gray-200 md:border-t-0 md:border-l-0">
+                <div className="hidden md:block absolute left-0 top-6 bottom-6 w-px bg-gray-200"></div>
                 <div className="feature-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#6B7280" className="h-8 w-8 text-gray-500" style={{ color: '#6B7280 !important', stroke: '#6B7280' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -121,7 +122,8 @@ export default function Home() {
               </article>
 
               {/* Sort it */}
-              <article className="p-6 border-t md:border-t-0 md:border-l border-gray-100">
+              <article className="p-6 flex flex-col relative border-t border-gray-200 md:border-t-0 md:border-l-0">
+                <div className="hidden md:block absolute left-0 top-6 bottom-6 w-px bg-gray-200"></div>
                 <div className="feature-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#6B7280" className="h-8 w-8 text-gray-500" style={{ color: '#6B7280 !important', stroke: '#6B7280' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -129,7 +131,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">Sort it</h3>
                 <p className="text-base text-gray-700">
-                  We align to industry standards and warranties so your builder can get right to fixing snags—no confusion, no delay.
+                  We align to industry standards and warranties so your builder can get right to fixing snags. No disagreements. No delays.
                 </p>
               </article>
             </div>
@@ -138,7 +140,7 @@ export default function Home() {
       </Section>
 
       {/* Industry Standards Section */}
-      <Section background="white" spacing="sm">
+      <Section background="white" spacing="sm" className="-mt-6 md:-mt-8">
         <div className="bg-dark-green text-white rounded-2xl shadow-lg overflow-hidden">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto py-12 px-6 md:px-8">
             <div className="mb-6">
@@ -169,7 +171,7 @@ export default function Home() {
               <h2 className="section-title">Start snagging for free</h2>
             </div>
             <p className="section-text">
-            Inspect your home with a guided checklist and record any snags as you go - all for free. You only pay £19.99 when you’re ready to send your completed snag list to your builder.
+            Inspect your home with a guided checklist and record any snags as you go - all for free. You only pay £19.99 when you're ready to send your completed snag list to your builder.
             </p>
             <div className="flex justify-center">
               <Link href="/signup">
