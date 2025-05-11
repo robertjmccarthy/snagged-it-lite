@@ -44,15 +44,16 @@ function DashboardContent() {
     verifyAuth();
   }, [loading, user]);
   
-  // Load user progress data
-  useEffect(() => {
-    const loadProgressData = async () => {
-      if (localLoading || !user) return;
+  // Define the loadProgressData function outside useEffect so it can be reused
+  const loadProgressData = async () => {
+    if (localLoading || !user) return;
+    
+    try {
+      setIsLoadingProgress(true);
+      debug.log('Dashboard: Loading progress data...');
       
+      // Get total steps for outside and inside
       try {
-        setIsLoadingProgress(true);
-        
-        // Get total steps for outside and inside
         const [outsideTotalSteps, insideTotalSteps] = await Promise.all([
           getChecklistItemCount('outside'),
           getChecklistItemCount('inside')
@@ -60,17 +61,30 @@ function DashboardContent() {
         
         setOutsideTotal(outsideTotalSteps);
         setInsideTotal(insideTotalSteps);
-        
-        // Get user progress for outside and inside
+      } catch (countError) {
+        debug.error('Error fetching checklist item counts:', countError);
+        // Continue with other data fetching even if this fails
+      }
+      
+      // Get user progress for outside and inside
+      try {
         const [outsideUserProgress, insideUserProgress] = await Promise.all([
           getUserProgress(user.id, 'outside'),
           getUserProgress(user.id, 'inside')
         ]);
         
+        debug.log('Dashboard: Outside progress:', outsideUserProgress);
+        debug.log('Dashboard: Inside progress:', insideUserProgress);
+        
         setOutsideProgress(outsideUserProgress);
         setInsideProgress(insideUserProgress);
-        
-        // Get snag counts for outside and inside
+      } catch (progressError) {
+        debug.error('Error fetching user progress:', progressError);
+        // Continue with other data fetching even if this fails
+      }
+      
+      // Get snag counts for outside and inside
+      try {
         const [outsideSnags, insideSnags] = await Promise.all([
           getSnagCountForCategory(user.id, 'outside'),
           getSnagCountForCategory(user.id, 'inside')
@@ -78,15 +92,57 @@ function DashboardContent() {
         
         setOutsideSnagCount(outsideSnags);
         setInsideSnagCount(insideSnags);
-        
-        setIsLoadingProgress(false);
-      } catch (error) {
-        debug.error('Error loading progress data:', error);
-        setIsLoadingProgress(false);
+      } catch (snagCountError) {
+        debug.error('Error fetching snag counts:', snagCountError);
+        // Continue even if this fails
       }
-    };
-    
+      
+      setIsLoadingProgress(false);
+    } catch (error) {
+      debug.error('Error in loadProgressData:', error);
+      setIsLoadingProgress(false);
+    }
+  };
+  
+  // Load user progress data on initial mount and when user changes
+  useEffect(() => {
     loadProgressData();
+  }, [localLoading, user]);
+  
+  // Use a combination of approaches to ensure data is refreshed when returning to the dashboard
+  useEffect(() => {
+    if (!localLoading && user) {
+      // Function to refresh data
+      const refreshData = () => {
+        debug.log('Dashboard: Refreshing data...');
+        loadProgressData();
+      };
+      
+      // Refresh when the page becomes visible (handles tab switching and app resuming)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          refreshData();
+        }
+      };
+      
+      // Refresh when the window regains focus (handles navigation back to this page)
+      const handleFocus = () => {
+        refreshData();
+      };
+      
+      // Add event listeners
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('focus', handleFocus);
+      
+      // Initial refresh
+      refreshData();
+      
+      // Clean up event listeners when component unmounts
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', handleFocus);
+      };
+    }
   }, [localLoading, user]);
 
   if (loading || localLoading || isLoadingProgress) {
@@ -110,27 +166,21 @@ function DashboardContent() {
 
   // Helper function to determine the next step URL for outside checks
   const getOutsideNextStepUrl = () => {
-    if (!outsideProgress) {
-      return '/checks/outside/1'; // Start at step 1 if no progress
+    if (!outsideProgress || outsideProgress.is_complete) {
+      return '/checks/outside'; // Go to the outside checks overview page
     }
     
-    if (outsideProgress.is_complete) {
-      return '/checks/outside/1'; // Start over if already complete
-    }
-    
+    // If user has started but not completed, they can continue from current step
     return `/checks/outside/${outsideProgress.current_step}`; // Continue from current step
   };
   
   // Helper function to determine the next step URL for inside checks
   const getInsideNextStepUrl = () => {
-    if (!insideProgress) {
-      return '/checks/inside/1'; // Start at step 1 if no progress
+    if (!insideProgress || insideProgress.is_complete) {
+      return '/checks/inside'; // Go to the inside checks overview page
     }
     
-    if (insideProgress.is_complete) {
-      return '/checks/inside/1'; // Start over if already complete
-    }
-    
+    // If user has started but not completed, they can continue from current step
     return `/checks/inside/${insideProgress.current_step}`; // Continue from current step
   };
   

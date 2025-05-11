@@ -200,19 +200,24 @@ export async function deleteSnag(userId: string, snagId: string): Promise<void> 
 
 // Get user progress for a category
 export async function getUserProgress(userId: string, categorySlug: string): Promise<UserProgress | null> {
-  const { data, error } = await supabase
-    .from('user_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('category_slug', categorySlug)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('category_slug', categorySlug)
+      .single();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows returned" which we handle as null
-    console.error('Error fetching user progress:', error);
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows returned" which we handle as null
+      debug.error('Error fetching user progress:', error);
+      throw error;
+    }
+
+    return data || null;
+  } catch (error) {
+    debug.error('Error in getUserProgress:', error);
     throw error;
   }
-
-  return data || null;
 }
 
 // Create or update user progress
@@ -240,7 +245,7 @@ export async function updateUserProgress(
         .single();
 
       if (error) {
-        console.error('Error updating user progress:', error);
+        debug.error('Error updating user progress:', error);
         throw error;
       }
 
@@ -261,14 +266,14 @@ export async function updateUserProgress(
         .single();
 
       if (error) {
-        console.error('Error creating user progress:', error);
+        debug.error('Error creating user progress:', error);
         throw error;
       }
 
       return data;
     }
   } catch (error) {
-    console.error('Error in updateUserProgress:', error);
+    debug.error('Error in updateUserProgress:', error);
     throw error;
   }
 }

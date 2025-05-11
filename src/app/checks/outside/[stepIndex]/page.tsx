@@ -117,24 +117,36 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
       // Mark this step as complete in user progress
       const isLastStep = stepIndex === totalSteps || stepIndex === MAX_STEPS;
       
-      if (isLastStep) {
-        // If this is the last step, mark the entire section as complete
-        debug.log('This is the last step, marking outside checks as complete');
-        await updateUserProgress(user.id, 'outside', stepIndex, true);
+      // Update progress in Supabase
+      try {
+        if (isLastStep) {
+          // If this is the last step, mark the entire section as complete
+          debug.log('This is the last step, marking outside checks as complete');
+          await updateUserProgress(user.id, 'outside', stepIndex, true);
+        } else {
+          // Otherwise, update progress to the next step
+          debug.log(`Moving to next step: ${stepIndex + 1}`);
+          await updateUserProgress(user.id, 'outside', stepIndex + 1, false);
+        }
         
-        // Redirect to dashboard
-        debug.log('Redirecting to dashboard');
-        router.push('/dashboard');
-      } else {
-        // Otherwise, update progress and move to the next step
-        debug.log(`Moving to next step: ${stepIndex + 1}`);
-        await updateUserProgress(user.id, 'outside', stepIndex + 1, false);
-        
-        // Redirect to the next step
-        router.push(`/checks/outside/${stepIndex + 1}`);
+        // Navigate after successful progress update
+        if (isLastStep) {
+          // Redirect to dashboard
+          debug.log('Redirecting to dashboard');
+          router.push('/dashboard');
+        } else {
+          // Redirect to the next step
+          debug.log(`Navigating to step ${stepIndex + 1}`);
+          router.push(`/checks/outside/${stepIndex + 1}`);
+        }
+      } catch (progressError) {
+        // Log the error and show a user-friendly message
+        debug.error('Error updating progress:', progressError);
+        alert('There was an issue saving your progress. Please try again.');
+        setNavigating(false);
       }
     } catch (error) {
-      debug.error('Error continuing to next step:', error);
+      debug.error('Error in continue handler:', error);
       setNavigating(false);
     }
   };
@@ -247,7 +259,7 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
               <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
                 <button
                   onClick={handleAddSnag}
-                  className="btn btn-outline rounded-pill px-6 py-2 order-2 sm:order-1"
+                  className="menu-item bg-white border border-gray-200 hover:bg-gray-50 text-gray-dark order-2 sm:order-1"
                   aria-label={snags.length > 0 ? "Add another snag" : "Add a snag"}
                 >
                   <span className="flex items-center">
@@ -261,7 +273,7 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
                 <button
                   onClick={handleContinue}
                   disabled={navigating}
-                  className="btn btn-primary rounded-pill px-6 py-2 order-1 sm:order-2"
+                  className="menu-item bg-primary hover:bg-primary-hover text-foreground order-1 sm:order-2"
                   aria-label={stepIndex === totalSteps ? "Finish outside checks" : "Continue with no snags"}
                 >
                   {navigating ? (
