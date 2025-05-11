@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Layout, Section, Card, Button } from '@/components';
 
-export default function ConfirmEmail() {
-  const router = useRouter();
+// Component that uses searchParams (needs to be wrapped in Suspense)
+function EmailConfirmationContent() {
   const searchParams = useSearchParams();
   
   // Clear any temporary session state on mount
@@ -35,9 +35,20 @@ export default function ConfirmEmail() {
     
     clearSession();
   }, [searchParams]);
+  
+  return null; // This component just handles the side effect
+}
+
+export default function ConfirmEmail() {
+  const router = useRouter();
 
   return (
     <Layout>
+      {/* Wrap the component that uses useSearchParams in Suspense */}
+      <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>}>
+        <EmailConfirmationContent />
+      </Suspense>
+      
       <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
         <div className="container max-w-md">
           <Card className="p-8 text-center">
