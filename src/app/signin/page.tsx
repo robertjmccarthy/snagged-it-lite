@@ -10,7 +10,7 @@ import { Layout, Section, Card } from '@/components';
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get('redirectedFrom') || null;
+  const redirectedFrom = searchParams?.get('redirectedFrom') || null;
   const { user, loading, error: authError, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,9 +54,8 @@ function SignInContent() {
     <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
       <div className="container max-w-md">
         <Card className="p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">Welcome back</h1>
-            <p className="text-gray-dark">Sign in to continue documenting and tracking your home build issues.</p>
+          <div className="text-left mb-4">
+            <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
           </div>
           
           <AuthForm

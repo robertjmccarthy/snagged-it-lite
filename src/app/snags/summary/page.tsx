@@ -3,11 +3,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getAllUserSnags } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
+import { Layout, Section, Card, Button } from '@/components';
 
 // Success message component with Suspense boundary
 function SuccessMessage() {
@@ -91,19 +91,17 @@ export default function SnagSummaryPage() {
 
   if (loading || isLoading) {
     return (
-      <main className="flex min-h-screen flex-col overflow-x-hidden">
-        <Navigation isAuthenticated={!!user} />
+      <Layout>
         <div className="flex flex-1 items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </main>
+      </Layout>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col overflow-x-hidden">
-      <Navigation isAuthenticated={!!user} />
-      <div className="flex flex-1 flex-col p-6 animate-fade-in">
+    <Layout>
+      <Section background="light" spacing="md" className="animate-fade-in">
         <div className="container mx-auto max-w-4xl">
           <div className="mb-6 flex items-center">
             <Link 
@@ -118,7 +116,7 @@ export default function SnagSummaryPage() {
             </Link>
           </div>
           
-          <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
+          <Card className="p-6 md:p-8">
             <Suspense fallback={null}>
               <SuccessMessage />
             </Suspense>
@@ -155,21 +153,25 @@ export default function SnagSummaryPage() {
                   You haven't recorded any issues during your property checks. Start a check to document any problems you find.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/checks/outside" className="btn btn-primary rounded-pill px-6 py-2">
-                    <span className="flex items-center">
-                      Check outside
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </span>
+                  <Link href="/checks/outside">
+                    <Button variant="primary">
+                      <span className="flex items-center">
+                        Check outside
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </span>
+                    </Button>
                   </Link>
-                  <Link href="/checks/inside" className="btn btn-outline rounded-pill px-6 py-2">
-                    <span className="flex items-center">
-                      Check inside
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </span>
+                  <Link href="/checks/inside">
+                    <Button variant="outline">
+                      <span className="flex items-center">
+                        Check inside
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </span>
+                    </Button>
                   </Link>
                 </div>
               </div>
@@ -224,16 +226,18 @@ export default function SnagSummaryPage() {
                             )}
                             
                             <div className="mt-4 flex justify-end">
-                              <Link 
-                                href={`/snags/${snag.id}/edit`}
-                                className="btn btn-outline rounded-pill px-4 py-1 text-sm"
-                              >
+                              <Link href={`/snags/${snag.id}/edit`}>
+                                <Button 
+                                  variant="outline"
+                                  size="sm"
+                                >
                                 <span className="flex items-center">
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                   </svg>
                                   Edit
                                 </span>
+                                </Button>
                               </Link>
                             </div>
                           </div>
@@ -246,9 +250,9 @@ export default function SnagSummaryPage() {
                 {/* Share feature removed */}
               </>
             )}
-          </div>
+          </Card>
         </div>
-      </div>
-    </main>
+      </Section>
+    </Layout>
   );
 }

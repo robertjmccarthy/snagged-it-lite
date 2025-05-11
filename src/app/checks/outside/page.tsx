@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { 
   getChecklistItemCount,
@@ -12,6 +11,7 @@ import {
   updateUserProgress
 } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
+import { Layout, Section, Card, Button } from '@/components';
 
 export default function OutsideChecks() {
   const router = useRouter();
@@ -81,20 +81,17 @@ export default function OutsideChecks() {
 
   if (loading || isLoading) {
     return (
-      <main className="flex min-h-screen flex-col">
-        <Navigation isAuthenticated={!!user} />
+      <Layout>
         <div className="flex flex-1 items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </main>
+      </Layout>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={!!user} />
-      
-      <div className="flex flex-1 flex-col p-6 animate-fade-in">
+    <Layout>
+      <Section background="light" spacing="md" className="animate-fade-in">
         <div className="container mx-auto max-w-4xl">
           <div className="mb-6 flex items-center">
             <Link 
@@ -109,7 +106,7 @@ export default function OutsideChecks() {
             </Link>
           </div>
           
-          <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
+          <Card className="p-6 md:p-8">
             <header className="mb-8">
               <div className="flex items-center mb-4">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
@@ -154,10 +151,13 @@ export default function OutsideChecks() {
                       You're on step {progress.current_step} of {totalSteps}.
                       {snagCount > 0 && ` You've recorded ${snagCount} ${snagCount === 1 ? 'snag' : 'snags'} so far.`}
                     </p>
-                    <button
+                    <Button
+                      variant="primary"
                       onClick={handleStartChecking}
                       disabled={isStarting}
-                      className="mt-4 w-full btn btn-primary rounded-pill py-3"
+                      fullWidth
+                      size="lg"
+                      className="mt-4"
                       aria-label="Continue checking the outside"
                     >
                       {isStarting ? (
@@ -176,7 +176,7 @@ export default function OutsideChecks() {
                           </svg>
                         </span>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 ) : progress && progress.is_complete ? (
                   <div className="bg-success/10 p-4 rounded-lg border border-success/20 mb-6">
@@ -191,23 +191,29 @@ export default function OutsideChecks() {
                       {snagCount > 0 ? ` You've recorded ${snagCount} ${snagCount === 1 ? 'snag' : 'snags'}.` : ' No snags were recorded.'}
                     </p>
                     <div className="mt-4 space-y-3">
-                      <Link 
-                        href="/snags/summary" 
-                        className="w-full btn btn-primary rounded-pill py-3 flex items-center justify-center"
-                      >
+                      <Link href="/snags/summary">
+                        <Button
+                          variant="primary"
+                          fullWidth
+                          size="lg"
+                          className="flex items-center justify-center"
+                        >
                         <span className="flex items-center">
                           View all snags
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                           </svg>
                         </span>
+                        </Button>
                       </Link>
-                      <button
+                      <Button
+                        variant="outline"
                         onClick={handleStartChecking}
-                        className="w-full btn btn-outline rounded-pill py-3"
+                        fullWidth
+                        size="lg"
                       >
                         Start again
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : null}
@@ -241,10 +247,11 @@ export default function OutsideChecks() {
                     </div>
                     <h3 className="text-lg font-medium mb-2">Ready to start your outside inspection?</h3>
                     <p className="text-gray-dark mb-6">We'll guide you through each check step-by-step</p>
-                    <button 
+                    <Button 
+                      variant="primary"
                       onClick={handleStartChecking}
                       disabled={isStarting}
-                      className="btn btn-primary rounded-pill px-8 py-3 text-lg"
+                      size="lg"
                       aria-label="Start checking the outside"
                     >
                       {isStarting ? (
@@ -263,29 +270,30 @@ export default function OutsideChecks() {
                           </svg>
                         </span>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
             
             <div className="flex justify-between">
-              <Link 
-                href="/dashboard" 
-                className="btn btn-outline rounded-pill px-6 py-2"
-                aria-label="Go back to dashboard"
-              >
+              <Link href="/dashboard">
+                <Button 
+                  variant="outline"
+                  aria-label="Go back to dashboard"
+                >
                 <span className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                   </svg>
                   Back to dashboard
                 </span>
+                </Button>
               </Link>
             </div>
-          </div>
+          </Card>
         </div>
-      </div>
-    </main>
+      </Section>
+    </Layout>
   );
 }

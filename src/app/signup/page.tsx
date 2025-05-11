@@ -10,7 +10,7 @@ import { Layout, Section, Card } from '@/components';
 function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get('redirectedFrom') || null;
+  const redirectedFrom = searchParams?.get('redirectedFrom') || null;
   const { user, loading, error: authError, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ function SignUpContent() {
       console.log('Attempting to sign up with:', { email: data.email });
 
       // Use the signUp function from AuthContext
-      const result = await signUp(data.email, data.password, data.fullName);
+      const result = await signUp(data.email, data.password);
       
       if (!result.success) {
         throw new Error(result.error || 'Failed to sign up');
@@ -54,9 +54,8 @@ function SignUpContent() {
     <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
       <div className="container max-w-md">
         <Card className="p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">Create your account</h1>
-            <p className="text-gray-dark">Sign up to start documenting and tracking your home build issues.</p>
+          <div className="text-left mb-4">
+            <h1 className="text-3xl font-bold mb-2">Create your account</h1>
           </div>
           
           <AuthForm

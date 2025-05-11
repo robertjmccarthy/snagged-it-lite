@@ -99,7 +99,7 @@ body {
   }
 
   a:not(.btn):not(.menu-item) {
-    @apply text-success hover:text-success-hover transition-colors duration-200 underline hover:no-underline;
+    @apply text-gray-dark hover:text-gray-800 transition-colors duration-200 font-semibold underline;
   }
 }
 
@@ -109,7 +109,7 @@ body {
   }
 
   .btn {
-    @apply inline-flex items-center justify-center px-5 py-2 font-semibold rounded-pill transition-colors duration-200 cursor-pointer border-none text-foreground;
+    @apply inline-flex items-center justify-center font-semibold rounded-pill transition-colors duration-200 cursor-pointer border-none text-foreground px-5 py-2 text-sm;
   }
 
   .btn-primary {
@@ -129,7 +129,7 @@ body {
   }
 
   .btn-text {
-    @apply bg-transparent hover:bg-gray-lighter text-foreground p-2 rounded-md;
+    @apply bg-transparent hover:bg-gray-lighter text-foreground rounded-md;
   }
 
   .input {
@@ -162,6 +162,10 @@ body {
 
   .menu-item {
     @apply text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200 text-foreground hover:bg-gray-lighter;
+  }
+  
+  .menu-item-container {
+    @apply inline-block;
   }
 
   .highlight {

@@ -3,10 +3,10 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { getChecklistItemCount, getUserProgress, getSnagCountForCategory } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
+import { Layout, Section, Card, Button } from '@/components';
 
 // Component to handle the actual dashboard logic
 function DashboardContent() {
@@ -203,9 +203,9 @@ function DashboardContent() {
   };
 
   return (
-    <div className="flex flex-1 flex-col p-6 animate-fade-in">
+    <Section background="light" spacing="md" className="animate-fade-in">
       <div className="container mx-auto max-w-4xl">
-        <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
+        <Card className="p-6 md:p-8">
           <header className="text-center mb-8">
             <div className="flex justify-center mb-6">
               <div className="bg-primary/10 p-4 rounded-full">
@@ -214,7 +214,7 @@ function DashboardContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Hello {getUserFirstName()}!</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">Hello homeowner!</h1>
             <p className="text-gray-dark text-lg max-w-2xl mx-auto">Welcome to SnaggedIt</p>
           </header>
           
@@ -254,19 +254,19 @@ function DashboardContent() {
                   )}
                 </div>
                 
-                <Link 
-                  href={getOutsideNextStepUrl()}
-                  className={`btn ${outsideProgress && outsideProgress.is_complete ? 'btn-disabled' : 'btn-primary'} rounded-pill px-6 py-2`}
-                  aria-label={getOutsideButtonText()}
-                  aria-disabled={outsideProgress && outsideProgress.is_complete}
-                  onClick={e => (outsideProgress && outsideProgress.is_complete) && e.preventDefault()}
-                >
-                  <span className="flex items-center">
-                    {getOutsideButtonText()}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </span>
+                <Link href={getOutsideNextStepUrl()} onClick={e => (outsideProgress && outsideProgress.is_complete) && e.preventDefault()}>
+                  <Button 
+                    variant={outsideProgress && outsideProgress.is_complete ? 'outline' : 'primary'}
+                    disabled={outsideProgress && outsideProgress.is_complete}
+                    aria-label={getOutsideButtonText()}
+                  >
+                    <span className="flex items-center">
+                      {getOutsideButtonText()}
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </span>
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -305,19 +305,19 @@ function DashboardContent() {
                   )}
                 </div>
                 
-                <Link 
-                  href={getInsideNextStepUrl()}
-                  className={`btn ${insideProgress && insideProgress.is_complete ? 'btn-disabled' : 'btn-primary'} rounded-pill px-6 py-2`}
-                  aria-label={getInsideButtonText()}
-                  aria-disabled={insideProgress && insideProgress.is_complete}
-                  onClick={e => (insideProgress && insideProgress.is_complete) && e.preventDefault()}
-                >
-                  <span className="flex items-center">
-                    {getInsideButtonText()}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </span>
+                <Link href={getInsideNextStepUrl()} onClick={e => (insideProgress && insideProgress.is_complete) && e.preventDefault()}>
+                  <Button 
+                    variant={insideProgress && insideProgress.is_complete ? 'outline' : 'primary'}
+                    disabled={insideProgress && insideProgress.is_complete}
+                    aria-label={getInsideButtonText()}
+                  >
+                    <span className="flex items-center">
+                      {getInsideButtonText()}
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </span>
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -325,17 +325,19 @@ function DashboardContent() {
             {/* View Snag List Button - Only shown when appropriate */}
             {showSnagListButton() && (
               <div className="mt-8 text-center">
-                <Link 
-                  href="/snags/summary" 
-                  className="btn btn-primary rounded-pill px-8 py-3 text-lg inline-flex items-center justify-center" 
-                  aria-label="View your complete snag list"
-                >
-                  <span className="flex items-center">
-                    View your snag list
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                    </svg>
-                  </span>
+                <Link href="/snags/summary">
+                  <Button 
+                    variant="primary" 
+                    size="lg"
+                    aria-label="View your complete snag list"
+                  >
+                    <span className="flex items-center">
+                      View your snag list
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                      </svg>
+                    </span>
+                  </Button>
                 </Link>
               </div>
             )}
@@ -386,9 +388,9 @@ function DashboardContent() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
-    </div>
+    </Section>
   );
 }
 
@@ -406,11 +408,10 @@ export default function Dashboard() {
   const { user } = useAuth();
   
   return (
-    <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={!!user} />
+    <Layout>
       <Suspense fallback={<DashboardLoading />}>
         <DashboardContent />
       </Suspense>
-    </main>
+    </Layout>
   );
 }

@@ -73,10 +73,10 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 <Link href="/signin" className="menu-item">
                   Sign in
                 </Link>
-                <Link href="/signup">
+                <Link href="/signup" className="menu-item-container">
                   <Button 
                     variant="primary" 
-                    size="sm"
+                    size="md"
                     className="whitespace-nowrap"
                   >
                     Sign up

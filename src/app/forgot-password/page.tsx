@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import Navigation from '@/components/Navigation';
+import { Layout, Section, Card, Button } from '@/components';
 
 // Define the form schema
 const forgotPasswordSchema = z.object({
@@ -56,15 +56,16 @@ export default function ForgotPassword() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <Navigation isAuthenticated={false} />
-      
-      <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in">
+    <Layout>
+      <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
         <div className="container max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">Reset your password</h1>
-            <p className="text-gray-dark">Enter your email address and we'll send you instructions to reset your password.</p>
-          </div>
+          <Card className="p-8">
+            <div className="text-left mb-4">
+              <h1 className="text-3xl font-bold mb-2">Reset your password</h1>
+              <p className="text-sm text-gray-dark">Enter your email address and we'll send you instructions to reset your password.</p>
+            </div>
+            
+            <hr className="my-6 border-gray-200" aria-hidden="true" />
           
           {isSuccess ? (
             <div className="bg-success/5 p-6 rounded-lg border border-success/10 text-center">
@@ -78,9 +79,9 @@ export default function ForgotPassword() {
               <h2 className="text-lg font-semibold mb-2">Check your inbox</h2>
               <p className="mb-6">We've sent password reset instructions to your email address.</p>
               <Link href="/signin">
-                <button className="btn btn-primary rounded-pill px-6 py-2">
+                <Button variant="primary" size="md">
                   Return to sign in
-                </button>
+                </Button>
               </Link>
             </div>
           ) : (
@@ -103,7 +104,7 @@ export default function ForgotPassword() {
               <form className="space-y-6" onSubmit={handleSubmit(handleResetPassword)}>
                 <div className="space-y-2">
                   <label htmlFor="email" className="form-label">
-                    Email address
+                    Your email address
                   </label>
                   <input
                     id="email"
@@ -118,15 +119,17 @@ export default function ForgotPassword() {
                   {formErrors.email && <p className="form-error">{formErrors.email.message}</p>}
                 </div>
 
-                <div className="pt-4">
-                  <button
+                <div className="pt-2 flex flex-col items-start">
+                  <Button
                     type="submit"
+                    variant="primary"
+                    size="md"
+                    className="w-auto"
                     disabled={isLoading}
-                    className="btn btn-primary w-full py-3 rounded-pill"
                     aria-label="Reset password"
                   >
                     {isLoading ? (
-                      <span className="flex items-center justify-center">
+                      <span className="flex items-center">
                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -136,19 +139,21 @@ export default function ForgotPassword() {
                     ) : (
                       'Reset password'
                     )}
-                  </button>
+                  </Button>
                 </div>
                 
-                <div className="text-center mt-4">
-                  <Link href="/signin" className="text-success hover:text-success-hover transition-colors duration-200">
+                <hr className="mt-8 mb-4 w-full border-gray-200" aria-hidden="true" />
+                <div className="text-sm">
+                  <Link href="/signin">
                     Back to sign in
                   </Link>
                 </div>
               </form>
             </>
           )}
-        </div>
+        </Card>
       </div>
-    </main>
+    </Section>
+  </Layout>
   );
 }

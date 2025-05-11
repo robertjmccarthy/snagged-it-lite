@@ -14,7 +14,6 @@ const signInSchema = z.object({
 });
 
 const signUpSchema = z.object({
-  fullName: z.string().min(2, 'Full name is required').optional(),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
@@ -44,13 +43,12 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: isSignUp 
-      ? { fullName: '', email: '', password: '', confirmPassword: '' } 
+      ? { email: '', password: '', confirmPassword: '' } 
       : { email: '', password: '' },
   });
   
   // Type assertion for errors based on form type
   const formErrors = errors as typeof errors & {
-    fullName?: { message?: string };
     email?: { message?: string };
     password?: { message?: string };
     confirmPassword?: { message?: string };
@@ -59,11 +57,10 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
   return (
     <div className="w-full space-y-6">
       {!isSignUp && (
-        <p className="text-center text-gray-dark">
-          Don't have an account?{' '}
+        <p className="text-left text-sm text-gray-dark">
+          New to SnaggedIt?{' '}
           <Link
             href="/signup"
-            className="text-success hover:text-success-hover transition-colors duration-200"
           >
             Sign up
           </Link>
@@ -71,17 +68,18 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
       )}
       
       {isSignUp && (
-        <p className="text-center text-gray-dark">
+        <p className="text-left text-sm text-gray-dark">
           Already have an account?{' '}
           <Link
             href="/signin"
-            className="text-success hover:text-success-hover transition-colors duration-200"
           >
             Sign in
           </Link>
         </p>
       )}
 
+      <hr className="my-6 border-gray-200" aria-hidden="true" />
+      
       {error && (
         <div className="rounded-md bg-error/10 p-4 border border-error/20">
           <div className="flex">
@@ -98,28 +96,12 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
       )}
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        <div className="space-y-4">
-          {isSignUp && (
-            <div className="space-y-2">
-              <label htmlFor="fullName" className="form-label">
-                Full Name
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                autoComplete="name"
-                className={`input ${formErrors.fullName ? 'input-error' : ''}`}
-                placeholder="Your full name"
-                {...register('fullName')}
-                aria-invalid={formErrors.fullName ? 'true' : 'false'}
-              />
-              {formErrors.fullName && <p className="form-error">{formErrors.fullName.message}</p>}
-            </div>
-          )}
+        <div className="space-y-3">
+
 
           <div className="space-y-2">
             <label htmlFor="email" className="form-label">
-              Email address
+              Your email address
             </label>
             <input
               id="email"
@@ -137,19 +119,12 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label htmlFor="password" className="form-label">
-                Password
+                Your password
               </label>
-              {!isSignUp && (
-                <div className="text-sm">
-                  <Link
-                    href="/forgot-password"
-                    className="text-success hover:text-success-hover transition-colors duration-200"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-              )}
             </div>
+            {isSignUp && (
+              <p className="text-xs text-gray-500 mb-1">Password must be at least 6 characters long</p>
+            )}
             <input
               id="password"
               type="password"
@@ -166,7 +141,7 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
           {isSignUp && (
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="form-label">
-                Confirm Password
+                Confirm your password
               </label>
               <input
                 id="confirmPassword"
@@ -185,17 +160,17 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
           )}
         </div>
 
-        <div className="pt-4">
-          <Button
-            type="submit"
-            variant="primary"
+        <div className="pt-2 flex flex-col items-start">
+          <Button 
+            type="submit" 
+            variant="primary" 
+            size="md" 
+            className="w-auto" 
             disabled={isLoading}
-            fullWidth
-            size="lg"
             aria-label={isSignUp ? 'Sign up' : 'Sign in'}
           >
             {isLoading ? (
-              <span className="flex items-center justify-center">
+              <span className="flex items-center">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -206,6 +181,19 @@ export default function AuthForm({ type, onSubmit, isLoading, error }: AuthFormP
               <>{isSignUp ? 'Sign up' : 'Sign in'}</>
             )}
           </Button>
+          
+          {!isSignUp && (
+            <>
+              <hr className="mt-8 mb-4 w-full border-gray-200" aria-hidden="true" />
+              <div className="text-sm">
+                <Link
+                  href="/forgot-password"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </form>
     </div>
