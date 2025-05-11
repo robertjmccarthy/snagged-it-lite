@@ -27,7 +27,7 @@ export default function Home() {
     <Layout>
       {/* Hero section */}
       <Section background="light" spacing="lg" className="overflow-hidden animate-fade-in">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-3">
           {/* Left column - Hero text */}
           <div className="w-full md:w-1/2 md:pr-8 lg:pr-16 mb-12 md:mb-0">
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-foreground">
@@ -166,10 +166,10 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
                 </svg>
               </div>
-              <h2 className="section-title">Get started for free. Pay £19.99 when you send your snag list.</h2>
+              <h2 className="section-title">Start snagging for free</h2>
             </div>
             <p className="section-text">
-              Use SnaggedIt to walk through your entire inspection and record snags at no cost. You only pay £19.99 when you send your list to your builder.
+            Inspect your home with a guided checklist and record any snags as you go - all for free. You only pay £19.99 when you’re ready to send your completed snag list to your builder.
             </p>
             <div className="flex justify-center">
               <Link href="/signup">

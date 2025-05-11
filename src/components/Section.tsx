@@ -35,7 +35,7 @@ export default function Section({
   const spacingStyles = {
     'sm': 'py-6',
     'md': 'py-12',
-    'lg': 'py-16 md:py-20'
+    'lg': 'pt-8 pb-16 md:pt-10 md:pb-20'
   };
   
   const sectionClasses = `${backgroundStyles[background]} ${spacingStyles[spacing]} ${className}`;
