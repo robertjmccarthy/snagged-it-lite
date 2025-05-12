@@ -271,13 +271,7 @@ function DashboardContent() {
                 <p className="text-gray-dark mb-2">Check the brickwork, external paintwork, drives and pathways, the roof, and any garages and gardens.</p>
               </div>
               
-              <div className="mb-6">
-                {outsideSnagCount > 0 && (
-                  <p className="text-sm text-gray-dark mt-2">
-                    {outsideSnagCount} {outsideSnagCount === 1 ? 'snag' : 'snags'} recorded
-                  </p>
-                )}
-              </div>
+              <div className="mb-6"></div>
               
               <div className="flex">
                 <Link href={getOutsideNextStepUrl()} onClick={e => (outsideProgress && outsideProgress.is_complete) && e.preventDefault()}>
@@ -302,13 +296,7 @@ function DashboardContent() {
                 <p className="text-gray-dark mb-2">Check the ceilings and walls, the windows and doors, the floors, pipes, radiators, and the loft space.</p>
               </div>
               
-              <div className="mb-6">
-                {insideSnagCount > 0 && (
-                  <p className="text-sm text-gray-dark mt-2">
-                    {insideSnagCount} {insideSnagCount === 1 ? 'snag' : 'snags'} recorded
-                  </p>
-                )}
-              </div>
+              <div className="mb-6"></div>
               
               <div className="flex">
                 <Link href={getInsideNextStepUrl()} onClick={e => (insideProgress && insideProgress.is_complete) && e.preventDefault()}>

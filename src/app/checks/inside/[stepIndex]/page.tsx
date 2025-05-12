@@ -27,7 +27,7 @@ export default function InsideCheckStep({ params }: StepPageProps) {
   const [checklistItem, setChecklistItem] = useState<any>(null);
   const [totalSteps, setTotalSteps] = useState(0);
   const [snags, setSnags] = useState<any[]>([]);
-  const [navigating, setNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   
   // Hard-coded maximum of 40 steps for inside checks
   const MAX_STEPS = 40;
@@ -108,9 +108,11 @@ export default function InsideCheckStep({ params }: StepPageProps) {
   }, [user, loading, router, stepIndex, isValidStep]);
 
   const handleContinue = async () => {
-    if (!user || navigating) return;
+    if (!user || isNavigating) return;
     
-    setNavigating(true);
+    setIsNavigating(true);
+    setIsLoading(true); // Show full-page loading state
+    
     try {
       debug.log(`Continue button clicked at step ${stepIndex}, total steps: ${totalSteps}`);
       
@@ -143,15 +145,17 @@ export default function InsideCheckStep({ params }: StepPageProps) {
         // Log the error and show a user-friendly message
         debug.error('Error updating progress:', progressError);
         alert('There was an issue saving your progress. Please try again.');
-        setNavigating(false);
+        setIsNavigating(false);
+        setIsLoading(false);
       }
     } catch (error) {
       debug.error('Error in continue handler:', error);
-      setNavigating(false);
+      setIsNavigating(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading || isLoading) {
+  if (loading || isLoading || isNavigating) {
     return (
       <main className="flex min-h-screen flex-col">
         <Navigation isAuthenticated={!!user} />
@@ -165,6 +169,14 @@ export default function InsideCheckStep({ params }: StepPageProps) {
   return (
     <main className="flex min-h-screen flex-col overflow-x-hidden">
       <Navigation isAuthenticated={!!user} />
+      
+      <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
+      <style jsx global>{`
+        body {
+          background-color: #BBF2D7;
+        }
+      `}</style>
+      
       <div className="flex flex-1 flex-col p-6 animate-fade-in">
         <div className="container mx-auto max-w-4xl">
           <div className="mb-6 flex items-center">
@@ -181,135 +193,64 @@ export default function InsideCheckStep({ params }: StepPageProps) {
           </div>
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-xl md:text-2xl font-bold">Inside Check</h1>
-              <div className="bg-primary/10 text-sm font-medium text-primary px-3 py-1 rounded-full">
-                Step {stepIndex} of {totalSteps}
+            <header className="mb-8">
+              <div className="mb-4">
+                <p className="text-gray-dark text-sm mb-2">
+                  Check {stepIndex} of {totalSteps}
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  {checklistItem && checklistItem.friendly_text}
+                </h1>
               </div>
-            </div>
+              
+              {checklistItem && (
+                <p className="text-gray-dark">Check this area carefully and note any issues you find.</p>
+              )}
+            </header>
             
-            <div className="bg-primary/10 rounded-lg p-6 mb-8 border border-primary/10">
-              <h2 className="font-semibold mb-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-primary">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Check this:
-              </h2>
-              <p className="text-lg">{checklistItem?.friendly_text}</p>
+            {/* Snag details removed as requested */}
+            
+            <div className="mb-8">
+              {/* Snag details removed as requested */}
+              
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={handleContinue}
+                  disabled={isNavigating}
+                  className="btn btn-primary text-base py-2 px-4"
+                  aria-label={stepIndex === totalSteps ? "Finish inside checks" : "Continue with no snags"}
+                >
+                  {stepIndex === totalSteps ? "Finish inside checks" : "Continue"}
+                </button>
+                
+                <span className="text-gray-dark font-medium self-center px-1 leading-none">or</span>
+                
+                <button
+                  onClick={() => {
+                    setIsNavigating(true);
+                    setIsLoading(true);
+                    router.push(`/checks/inside/${stepIndex}/snags/new`);
+                  }}
+                  className="btn btn-outline text-base py-2 px-4"
+                  aria-label={snags.length > 0 ? "Add another snag" : "Add a snag"}
+                >
+                  {snags.length > 0 ? "Add another snag" : "Add a snag"}
+                </button>
+              </div>
             </div>
             
             {snags.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-semibold mb-3 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-error">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                  </svg>
-                  Snags recorded for this item:
-                </h3>
-                <div className="space-y-4">
-                  {snags.map((snag) => (
-                    <div key={snag.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                      {snag.photo_url && (
-                        <div className="mt-4 bg-gray-50 rounded-lg overflow-hidden">
-                          <img 
-                            src={snag.photo_url} 
-                            alt="Snag photo" 
-                            className="w-full h-48 object-cover"
-                            onError={(e) => {
-                              console.error('Error loading image:', snag.photo_url);
-                              // Replace with placeholder on error
-                              e.currentTarget.onerror = null; // Prevent infinite error loop
-                              e.currentTarget.style.display = 'none';
-                              // Add a placeholder
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'w-full h-48 flex items-center justify-center bg-gray-100';
-                              placeholder.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-gray-300"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>';
-                              e.currentTarget.parentElement?.appendChild(placeholder);
-                            }}
-                          />
-                        </div>
-                      )}
-                      {snag.note && (
-                        <p className="text-gray-dark">{snag.note}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="border-t border-gray-100 pt-6 mt-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-                <button
-                  onClick={() => router.push(`/checks/inside/${stepIndex}/snags/new`)}
-                  className="menu-item bg-white border border-gray-200 hover:bg-gray-50 text-gray-dark order-2 sm:order-1"
-                  aria-label="Add a snag"
-                >
-                  <span className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    {snags.length > 0 ? "Add another snag" : "Add a snag"}
-                  </span>
-                </button>
-                
-                <button
-                  onClick={handleContinue}
-                  disabled={navigating}
-                  className="menu-item bg-primary hover:bg-primary-hover text-foreground order-1 sm:order-2"
-                  aria-label={stepIndex === totalSteps ? "Finish inside checks" : "Continue with no snags"}
-                >
-                  {navigating ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Loading...
-                    </span>
-                  ) : (
-                    <span className="flex items-center">
-                      {stepIndex === totalSteps ? "Finish inside checks" : "Continue"}
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-dark">
-                {snags.length > 0 ? (
+              <div className="mt-8 pt-4 border-t border-gray-200">
+                <div className="text-sm text-gray-dark">
                   <span className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-error">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
-                    {snags.length} {snags.length === 1 ? 'snag' : 'snags'} recorded for this check
+                    You've found {snags.length} {snags.length === 1 ? 'snag' : 'snags'}
                   </span>
-                ) : (
-                  <span className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-success">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    No snags recorded for this check
-                  </span>
-                )}
+                </div>
               </div>
-              
-              {stepIndex > 1 && (
-                <Link 
-                  href={`/checks/inside/${stepIndex - 1}`}
-                  className="text-primary hover:text-primary-hover transition-colors flex items-center text-sm"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                  </svg>
-                  Previous check
-                </Link>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
