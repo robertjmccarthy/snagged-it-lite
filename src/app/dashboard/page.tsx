@@ -247,22 +247,24 @@ function DashboardContent() {
     return 'Continue checks';
   };
   
-  // Determine if we should show the view snag list button
-  const showSnagListButton = () => {
+  // Determine if we should show the completion box
+  const showCompletionBox = () => {
     // Get the completion status of both outside and inside checks
     const outsideComplete = outsideProgress && outsideProgress.is_complete;
     const insideComplete = insideProgress && insideProgress.is_complete;
     
-    // Only show the button when both Outside and Inside checks are complete
+    // Only show the completion box when both Outside and Inside checks are complete
     return outsideComplete && insideComplete;
   };
+  
+  // No longer showing the View Snag List button as per requirements
 
   return (
     <Section background="light" spacing="md" className="animate-fade-in bg-transparent">
       <div className="container mx-auto max-w-4xl">
           <header className="text-left mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              {showSnagListButton() 
+              {showCompletionBox() 
                 ? "You're all done 🎉" 
                 : "Hello homeowner 👋"
               }
@@ -273,7 +275,7 @@ function DashboardContent() {
           {/* Progress Cards */}
           <div className="space-y-6 mb-10">
             {/* Show completion box when all checks are completed */}
-            {showSnagListButton() && (
+            {showCompletionBox() && (
               <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                 {outsideSnagCount + insideSnagCount > 0 ? (
                   /* Content for users with snags */
@@ -319,7 +321,7 @@ function DashboardContent() {
             )}
             
             {/* Only show check boxes if not all checks are completed */}
-            {!showSnagListButton() && (
+            {!showCompletionBox() && (
               <>
                 {/* Outside Checks Card */}
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -373,25 +375,7 @@ function DashboardContent() {
               </>
             )}
             
-            {/* View Snag List Button - Only shown when checks are in progress and snags exist */}
-            {!showSnagListButton() && outsideSnagCount + insideSnagCount > 0 && (
-              <div className="mt-4 text-center">
-                <Link href="/snags/summary">
-                  <Button 
-                    variant="primary" 
-                    size="lg"
-                    aria-label="View your complete snag list"
-                  >
-                    <span className="flex items-center">
-                      View your snag list
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                      </svg>
-                    </span>
-                  </Button>
-                </Link>
-              </div>
-            )}
+            {/* View Snag List button has been removed as per requirements */}
           </div>
           
           {/* How It Works Section removed */}
