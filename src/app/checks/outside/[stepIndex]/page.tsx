@@ -219,24 +219,21 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
             <div className="mb-8">
               {/* Snag details removed as requested */}
               
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  onClick={handleContinue}
-                  disabled={isNavigating}
-                  className="btn btn-primary text-base py-2 px-4"
-                  aria-label={stepIndex === totalSteps ? "Finish outside checks" : "Continue with no snags"}
-                >
-                  {stepIndex === totalSteps ? "Finish outside checks" : "Continue"}
-                </button>
-                
-                <span className="text-gray-dark font-medium self-center px-1 leading-none">or</span>
-                
+              <div className="flex flex-col md:flex-row md:justify-between gap-3 w-full">
                 <button
                   onClick={handleAddSnag}
-                  className="btn btn-outline text-base py-2 px-4"
+                  className="btn btn-primary text-base py-2 px-4 w-full md:w-auto order-1"
                   aria-label={snags.length > 0 ? "Add another snag" : "Add a snag"}
                 >
                   {snags.length > 0 ? "Add another snag" : "Add a snag"}
+                </button>
+                
+                <button
+                  onClick={handleContinue}
+                  className="btn btn-outline text-base py-2 px-4 w-full md:w-auto order-2"
+                  aria-label={stepIndex === totalSteps ? "Finish outside checks" : "Continue with no snags"}
+                >
+                  {stepIndex === totalSteps ? "Finish outside checks" : "Continue to next check"}
                 </button>
               </div>
             </div>
