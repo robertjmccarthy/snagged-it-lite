@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShare } from '@/contexts/ShareContext';
 import Navigation from '@/components/Navigation';
+import ClientOnly from '@/components/ClientOnly';
 import { debug } from '@/lib/debug';
 
 export default function NamePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const returnToConfirm = searchParams?.get('returnToConfirm') === 'true';
   const { user, loading } = useAuth();
   const { shareData, updateShareData } = useShare();
   const [fullName, setFullName] = useState('');
@@ -47,12 +46,8 @@ export default function NamePage() {
       // Save to context
       updateShareData({ fullName: fullName.trim() });
       
-      // Navigate based on return parameter
-      if (returnToConfirm) {
-        router.push('/snags/share/confirm');
-      } else {
-        router.push('/snags/share/address');
-      }
+      // We'll determine navigation in the ClientOnly component
+      router.push('/snags/share/address');
     } catch (error) {
       debug.error('Error saving name:', error);
       setError('An error occurred. Please try again.');
@@ -136,14 +131,32 @@ export default function NamePage() {
               </div>
               
               <div className="flex flex-col md:flex-row md:justify-start gap-3 w-full">
-                <button
-                  onClick={handleSubmit}
-                  className="btn btn-primary text-base py-2 px-4 w-full md:w-auto"
-                  disabled={isSubmitting}
-                  aria-busy={isSubmitting}
-                >
-                  {isSubmitting ? 'Saving...' : 'Continue'}
-                </button>
+                <ClientOnly>
+                  {() => {
+                    // This code only runs on the client
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const returnToConfirm = searchParams.get('returnToConfirm') === 'true';
+                    
+                    return (
+                      <button
+                        type="submit"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSubmit(e);
+                          // Override the navigation based on returnToConfirm
+                          if (returnToConfirm) {
+                            setTimeout(() => router.push('/snags/share/confirm'), 0);
+                          }
+                        }}
+                        className="btn btn-primary text-base py-2 px-4 w-full md:w-auto"
+                        disabled={isSubmitting}
+                        aria-busy={isSubmitting}
+                      >
+                        {isSubmitting ? 'Saving...' : 'Continue'}
+                      </button>
+                    );
+                  }}
+                </ClientOnly>
               </div>
             </div>
           </div>
