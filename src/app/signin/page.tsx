@@ -51,7 +51,7 @@ function SignInContent() {
   };
 
   return (
-    <Section background="light" spacing="lg" className="flex-1 flex items-center justify-center animate-fade-in">
+    <Section background="light" spacing="lg" fullHeight className="flex items-center justify-center animate-fade-in">
       <div className="container max-w-md">
         <Card className="p-8">
           <div className="text-left mb-4">

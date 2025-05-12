@@ -3,14 +3,14 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Link from 'next/link';
 import { 
   getChecklistItemCount,
   getUserProgress,
   getSnagCountForCategory
 } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
-import { Layout, Section, Card, Button } from '@/components';
+import { Layout } from '@/components';
+import Navigation from '@/components/Navigation';
 
 function OutsideChecksContent() {
   const router = useRouter();
@@ -87,19 +87,19 @@ function OutsideChecksContent() {
   }
 
   return (
-    <div className="py-12 animate-fade-in">
-      <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-1 flex-col p-6 animate-fade-in">
+      <div className="container mx-auto max-w-4xl">
         <div className="mb-6 flex items-center">
-          <Link 
-            href="/dashboard" 
-            className="text-gray-dark hover:text-primary transition-colors flex items-center"
-            aria-label="Back to dashboard"
+          <button 
+            onClick={() => router.back()} 
+            className="font-semibold text-sm text-gray-600 underline border-0 bg-transparent p-0 cursor-pointer font-inter flex items-center"
+            aria-label="Back"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Back
-          </Link>
+          </button>
         </div>
         
         <div className="space-y-6">
@@ -112,7 +112,7 @@ function OutsideChecksContent() {
               </p>
               
               <p className="text-gray-dark mb-6">
-                There are 18 checks to complete.
+                There are {totalSteps} checks to complete.
               </p>
               
               <div className="bg-gray-100 p-4 rounded-lg mb-6">

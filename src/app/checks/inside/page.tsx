@@ -90,16 +90,16 @@ function InsideChecksContent() {
     <div className="py-12 animate-fade-in">
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center">
-          <Link 
-            href="/dashboard" 
-            className="text-gray-dark hover:text-primary transition-colors flex items-center"
-            aria-label="Back to dashboard"
+          <button 
+            onClick={() => router.back()} 
+            className="font-semibold text-sm text-gray-600 underline border-0 bg-transparent p-0 cursor-pointer font-inter flex items-center"
+            aria-label="Back"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Back
-          </Link>
+          </button>
         </div>
         
         <div className="space-y-6">

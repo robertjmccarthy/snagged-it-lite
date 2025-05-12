@@ -22,7 +22,7 @@ export default function Layout({ children, hideFooter = false }: LayoutProps) {
   return (
     <main className="flex min-h-screen flex-col">
       <Navigation isAuthenticated={!!user} />
-      <div className="flex-grow">
+      <div className="flex-grow flex flex-col">
         {children}
       </div>
       {!hideFooter && <Footer />}

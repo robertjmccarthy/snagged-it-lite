@@ -172,42 +172,41 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
     <main className="flex min-h-screen flex-col overflow-x-hidden">
       <Navigation isAuthenticated={!!user} />
       
+      <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
+      <style jsx global>{`
+        body {
+          background-color: #BBF2D7;
+        }
+      `}</style>
+      
       <div className="flex flex-1 flex-col p-6 animate-fade-in">
         <div className="container mx-auto max-w-4xl">
           <div className="mb-6 flex items-center">
-            <Link 
-              href="/checks/outside" 
-              className="text-gray-dark hover:text-primary transition-colors flex items-center"
-              aria-label="Back to outside checks"
+            <button 
+              onClick={() => router.back()} 
+              className="font-semibold text-sm text-gray-600 underline border-0 bg-transparent p-0 cursor-pointer font-inter flex items-center"
+              aria-label="Back"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
               </svg>
-              Back to outside checks
-            </Link>
+              Back
+            </button>
           </div>
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
             <header className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="bg-primary/10 p-2 rounded-full mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-primary">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h1 className="text-2xl md:text-3xl font-bold">Outside Check</h1>
-                </div>
-                <div className="text-sm text-gray-dark bg-gray-50 px-3 py-1 rounded-full">
-                  Step {stepIndex} of {totalSteps}
-                </div>
+              <div className="mb-4">
+                <p className="text-gray-dark text-sm mb-2">
+                  Check {stepIndex} of {totalSteps}
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  {checklistItem && checklistItem.friendly_text}
+                </h1>
               </div>
               
               {checklistItem && (
-                <div className="bg-accent p-5 rounded-lg border border-primary/10">
-                  <h2 className="text-xl font-semibold mb-2">{checklistItem.friendly_text}</h2>
-                  <p className="text-gray-dark text-sm italic">Original: {checklistItem.original_text}</p>
-                </div>
+                <p className="text-gray-dark">Look at all the bricks on the house. Make sure there are no big chips or splashes of mortar.</p>
               )}
             </header>
             
@@ -314,18 +313,6 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
                   </span>
                 )}
               </div>
-              
-              {stepIndex > 1 && (
-                <Link 
-                  href={`/checks/outside/${stepIndex - 1}`}
-                  className="text-primary hover:text-primary-hover transition-colors flex items-center text-sm"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                  </svg>
-                  Previous check
-                </Link>
-              )}
             </div>
           </div>
         </div>

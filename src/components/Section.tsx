@@ -8,6 +8,7 @@ interface SectionProps {
   background?: 'white' | 'light' | 'dark-green';
   spacing?: 'sm' | 'md' | 'lg';
   container?: boolean;
+  fullHeight?: boolean;
 }
 
 /**
@@ -18,13 +19,15 @@ interface SectionProps {
  * @param background - Background color variant
  * @param spacing - Vertical spacing size
  * @param container - Whether to wrap content in a container
+ * @param fullHeight - Whether the section should take up the full available height
  */
 export default function Section({ 
   children, 
   className = '', 
   background = 'white',
   spacing = 'md',
-  container = true
+  container = true,
+  fullHeight = false
 }: SectionProps) {
   const backgroundStyles = {
     'white': 'bg-white',
@@ -38,7 +41,7 @@ export default function Section({
     'lg': 'pt-8 pb-16 md:pt-10 md:pb-20'
   };
   
-  const sectionClasses = `${backgroundStyles[background]} ${spacingStyles[spacing]} ${className}`;
+  const sectionClasses = `${backgroundStyles[background]} ${spacingStyles[spacing]} ${fullHeight ? 'flex-1 flex flex-col' : ''} ${className}`;
   
   return (
     <section className={sectionClasses}>

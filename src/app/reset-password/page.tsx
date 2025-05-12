@@ -45,12 +45,16 @@ function ResetPasswordContent() {
 
   useEffect(() => {
     // Check if we have the necessary parameters from the reset email
-    const token = searchParams.get('token');
-    const access_token = searchParams.get('access_token');
-    const type = searchParams.get('type');
-    
-    if ((token || access_token) && type === 'recovery') {
-      setHasToken(true);
+    if (searchParams) {
+      const token = searchParams.get('token');
+      const access_token = searchParams.get('access_token');
+      const type = searchParams.get('type');
+      
+      if ((token || access_token) && type === 'recovery') {
+        setHasToken(true);
+      } else {
+        setError('Invalid or missing reset token. Please request a new password reset link.');
+      }
     } else {
       setError('Invalid or missing reset token. Please request a new password reset link.');
     }
@@ -84,7 +88,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in">
+    <div className="flex flex-1 flex-col items-center justify-center py-12 animate-fade-in min-h-full">
       <div className="container max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Create new password</h1>
