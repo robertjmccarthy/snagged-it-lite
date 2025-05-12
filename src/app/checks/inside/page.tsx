@@ -63,12 +63,12 @@ function InsideChecksContent() {
     
     setIsStarting(true);
     try {
-      // If user has progress, navigate to their current step
-      if (progress && !progress.is_complete) {
+      // If user has progress and current_step is greater than 0, navigate to their current step
+      if (progress && !progress.is_complete && progress.current_step > 0) {
         debug.log(`Resuming inside checks at step ${progress.current_step}`);
         router.push(`/checks/inside/${progress.current_step}`);
       } else {
-        // Otherwise, start from step 1
+        // Otherwise, start from step 1 (this handles both new users and reset users)
         debug.log('Starting inside checks from step 1');
         router.push('/checks/inside/1');
       }

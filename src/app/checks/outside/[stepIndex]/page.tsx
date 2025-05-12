@@ -68,9 +68,16 @@ export default function OutsideCheckStep({ params }: StepPageProps) {
           const progress = await getUserProgress(user.id, 'outside');
           debug.log('Current user progress:', progress);
           
-          if (progress && stepIndex > progress.current_step && !progress.is_complete) {
+          // Special case: Allow accessing step 1 even if current_step is 0 (after reset)
+          const isAccessingFirstStep = stepIndex === 1;
+          const isStartingOver = progress && progress.current_step === 0;
+          
+          if (progress && stepIndex > progress.current_step && !progress.is_complete && !(isAccessingFirstStep && isStartingOver)) {
             debug.error(`Cannot skip steps (trying to access ${stepIndex}, but current is ${progress.current_step}), redirecting`);
-            router.replace(`/checks/outside/${progress.current_step}`);
+            
+            // If current_step is 0, redirect to step 1, otherwise to the current step
+            const redirectStep = progress.current_step === 0 ? 1 : progress.current_step;
+            router.replace(`/checks/outside/${redirectStep}`);
             return;
           }
 

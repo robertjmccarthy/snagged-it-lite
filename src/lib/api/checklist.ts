@@ -476,7 +476,19 @@ export async function uploadSnagPhoto(userId: string, file: File): Promise<strin
       fileSize: file.size
     });
     
-    // Upload the file
+    // First check if the user is authenticated with Supabase
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
+      debug.error('No active session found when attempting to upload file');
+      // Try to refresh the session
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      if (!refreshData?.session) {
+        throw new Error('Authentication required to upload files');
+      }
+      debug.log('Session refreshed successfully');
+    }
+    
+    // Upload the file with authenticated session
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('snags')
       .upload(filePath, file, {
@@ -511,3 +523,118 @@ export async function uploadSnagPhoto(userId: string, file: File): Promise<strin
     throw error;
   }
 }
+
+/**
+ * Resets a user's progress by deleting all their snags and resetting their progress
+ * for both outside and inside checks.
+ * 
+ * @param userId - The ID of the user whose progress to reset
+ */
+export const resetUserProgress = async (userId: string) => {
+  try {
+    debug.log('Resetting user progress for user:', userId);
+    
+    // First, check if the user has any progress records
+    const { data: existingProgress, error: fetchError } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId);
+      
+    if (fetchError) {
+      debug.error('Error fetching existing progress:', fetchError);
+      throw new Error(`Failed to fetch existing progress: ${fetchError.message}`);
+    }
+    
+    debug.log('Existing progress records:', existingProgress);
+    
+    // Delete all snags for the user
+    debug.log('Deleting all snags for user:', userId);
+    const { error: snagDeleteError } = await supabase
+      .from('snags')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (snagDeleteError) {
+      debug.error('Error deleting snags:', snagDeleteError);
+      throw new Error(`Failed to delete snags: ${snagDeleteError.message}`);
+    }
+    
+    debug.log('Successfully deleted all snags for user');
+    
+    // For outside progress, either update or insert based on whether a record exists
+    const outsideProgress = existingProgress?.find(p => p.category_slug === 'outside');
+    
+    debug.log('Existing outside progress:', outsideProgress);
+    
+    let outsideResult;
+    if (outsideProgress) {
+      debug.log('Updating existing outside progress record');
+      outsideResult = await supabase
+        .from('user_progress')
+        .update({
+          current_step: 0,
+          is_complete: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', outsideProgress.id);
+    } else {
+      debug.log('Creating new outside progress record');
+      outsideResult = await supabase
+        .from('user_progress')
+        .insert({
+          user_id: userId,
+          category_slug: 'outside',
+          current_step: 0,
+          is_complete: false,
+          updated_at: new Date().toISOString()
+        });
+    }
+    
+    if (outsideResult.error) {
+      debug.error('Error resetting outside progress:', outsideResult.error);
+      throw new Error(`Failed to reset outside progress: ${outsideResult.error.message}`);
+    }
+    
+    debug.log('Successfully reset outside progress');
+    
+    // For inside progress, either update or insert based on whether a record exists
+    const insideProgress = existingProgress?.find(p => p.category_slug === 'inside');
+    
+    debug.log('Existing inside progress:', insideProgress);
+    
+    let insideResult;
+    if (insideProgress) {
+      debug.log('Updating existing inside progress record');
+      insideResult = await supabase
+        .from('user_progress')
+        .update({
+          current_step: 0,
+          is_complete: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', insideProgress.id);
+    } else {
+      debug.log('Creating new inside progress record');
+      insideResult = await supabase
+        .from('user_progress')
+        .insert({
+          user_id: userId,
+          category_slug: 'inside',
+          current_step: 0,
+          is_complete: false,
+          updated_at: new Date().toISOString()
+        });
+    }
+    
+    if (insideResult.error) {
+      debug.error('Error resetting inside progress:', insideResult.error);
+      throw new Error(`Failed to reset inside progress: ${insideResult.error.message}`);
+    }
+    
+    debug.log('Successfully reset inside progress');
+    debug.log('User progress reset complete');
+  } catch (error) {
+    debug.error('Error in resetUserProgress:', error);
+    throw error;
+  }
+};

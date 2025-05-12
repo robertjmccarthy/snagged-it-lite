@@ -153,8 +153,13 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
       // Upload photo if present
       if (photoFile) {
         debug.log('Uploading photo...');
-        photoUrl = await uploadSnagPhoto(user.id, photoFile);
-        debug.log('Photo uploaded successfully:', photoUrl);
+        try {
+          photoUrl = await uploadSnagPhoto(user.id, photoFile);
+          debug.log('Photo uploaded successfully:', photoUrl);
+        } catch (photoError) {
+          debug.error('Photo upload failed, continuing with note only', photoError);
+          // Continue with just the note if photo upload fails
+        }
       }
       
       // Create the snag

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getChecklistItemCount, getUserProgress, getSnagCountForCategory } from '@/lib/api/checklist';
 import { debug } from '@/lib/debug';
 import { Layout, Section, Card, Button } from '@/components';
+import ResetProgress from '@/components/ResetProgress';
 
 // Component to handle the actual dashboard logic
 function DashboardContent() {
@@ -200,7 +201,9 @@ function DashboardContent() {
       return `${outsideTotal} of ${outsideTotal} complete`;
     }
     
-    return `${outsideProgress.current_step - 1} of ${outsideTotal} complete`;
+    // Ensure we don't display negative numbers when current_step is 0
+    const completedSteps = Math.max(0, outsideProgress.current_step - 1);
+    return `${completedSteps} of ${outsideTotal} complete`;
   };
   
   // Helper function to get inside progress text
@@ -213,7 +216,9 @@ function DashboardContent() {
       return `${insideTotal} of ${insideTotal} complete`;
     }
     
-    return `${insideProgress.current_step - 1} of ${insideTotal} complete`;
+    // Ensure we don't display negative numbers when current_step is 0
+    const completedSteps = Math.max(0, insideProgress.current_step - 1);
+    return `${completedSteps} of ${insideTotal} complete`;
   };
   
   // Helper function to get outside button text
@@ -256,63 +261,120 @@ function DashboardContent() {
     <Section background="light" spacing="md" className="animate-fade-in bg-transparent">
       <div className="container mx-auto max-w-4xl">
           <header className="text-left mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Hello homeowner 👋</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              {showSnagListButton() 
+                ? "You're all done 🎉" 
+                : "Hello homeowner 👋"
+              }
+            </h1>
+
           </header>
           
           {/* Progress Cards */}
           <div className="space-y-6 mb-10">
-            {/* Outside Checks Card */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="mb-4">
-                <p className="text-gray-dark text-sm mb-2">
-                  {getOutsideProgressText()}
-                </p>
-                <h2 className="text-xl font-semibold mb-2">Snag outside your home</h2>
-                <p className="text-gray-dark mb-2">Check the brickwork, external paintwork, drives and pathways, the roof, and any garages and gardens.</p>
-              </div>
-              
-              <div className="mb-6"></div>
-              
-              <div className="flex">
-                <Link href={getOutsideNextStepUrl()} onClick={e => (outsideProgress && outsideProgress.is_complete) && e.preventDefault()}>
-                  <button 
-                    className={`menu-item ${outsideProgress && outsideProgress.is_complete ? 'bg-gray-lighter' : 'bg-primary hover:bg-primary-hover'}`}
-                    disabled={outsideProgress && outsideProgress.is_complete}
-                    aria-label={getOutsideButtonText()}
-                  >
-                    {getOutsideButtonText()}
-                  </button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Inside Checks Card */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="mb-4">
-                <p className="text-gray-dark text-sm mb-2">
-                  {getInsideProgressText()}
-                </p>
-                <h2 className="text-xl font-semibold mb-2">Snag inside your home</h2>
-                <p className="text-gray-dark mb-2">Check the ceilings and walls, the windows and doors, the floors, pipes, radiators, and the loft space.</p>
-              </div>
-              
-              <div className="mb-6"></div>
-              
-              <div className="flex">
-                <Link href={getInsideNextStepUrl()} onClick={e => (insideProgress && insideProgress.is_complete) && e.preventDefault()}>
-                  <button 
-                    className={`menu-item ${insideProgress && insideProgress.is_complete ? 'bg-gray-lighter' : 'bg-primary hover:bg-primary-hover'}`}
-                    disabled={insideProgress && insideProgress.is_complete}
-                    aria-label={getInsideButtonText()}
-                  >
-                    {getInsideButtonText()}
-                  </button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* View Snag List Button - Only shown when appropriate */}
+            {/* Show completion box when all checks are completed */}
             {showSnagListButton() && (
+              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                {outsideSnagCount + insideSnagCount > 0 ? (
+                  /* Content for users with snags */
+                  <>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold mb-2">There are {outsideSnagCount + insideSnagCount} snags on your list</h2>
+                      <p className="text-gray-dark mb-4">
+                        Share your list with your builder so they can get onto sorting the snags, and you can enjoy your new home.
+                      </p>
+                    </div>
+                    
+                    <div className="mb-6"></div>
+                    
+                    <div className="flex">
+                      <Link href="/snags/share">
+                        <button 
+                          className="menu-item bg-primary hover:bg-primary-hover"
+                          aria-label="Share your snag list with your builder"
+                        >
+                          Share your snag list
+                        </button>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  /* Content for users with no snags */
+                  <>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold mb-2">You don't have any snags. Amazing!</h2>
+                      <p className="text-gray-dark mb-4">
+                        Enjoy living in your new home, and if you do find any snags, start a new snag list.
+                      </p>
+                    </div>
+                    
+                    <div className="mb-6"></div>
+                    
+                    <div className="flex">
+                      <ResetProgress />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            
+            {/* Only show check boxes if not all checks are completed */}
+            {!showSnagListButton() && (
+              <>
+                {/* Outside Checks Card */}
+                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="mb-4">
+                    <p className="text-gray-dark text-sm mb-2">
+                      {getOutsideProgressText()}
+                    </p>
+                    <h2 className="text-xl font-semibold mb-2">Snag outside your home</h2>
+                    <p className="text-gray-dark mb-2">Check the brickwork, external paintwork, drives and pathways, the roof, and any garages and gardens.</p>
+                  </div>
+                  
+                  <div className="mb-6"></div>
+                  
+                  <div className="flex">
+                    <Link href={getOutsideNextStepUrl()} onClick={e => (outsideProgress && outsideProgress.is_complete) && e.preventDefault()}>
+                      <button 
+                        className={`menu-item ${outsideProgress && outsideProgress.is_complete ? 'bg-gray-lighter' : 'bg-primary hover:bg-primary-hover'}`}
+                        disabled={outsideProgress && outsideProgress.is_complete}
+                        aria-label={getOutsideButtonText()}
+                      >
+                        {getOutsideButtonText()}
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Inside Checks Card */}
+                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="mb-4">
+                    <p className="text-gray-dark text-sm mb-2">
+                      {getInsideProgressText()}
+                    </p>
+                    <h2 className="text-xl font-semibold mb-2">Snag inside your home</h2>
+                    <p className="text-gray-dark mb-2">Check the ceilings and walls, the windows and doors, the floors, pipes, radiators, and the loft space.</p>
+                  </div>
+                  
+                  <div className="mb-6"></div>
+                  
+                  <div className="flex">
+                    <Link href={getInsideNextStepUrl()} onClick={e => (insideProgress && insideProgress.is_complete) && e.preventDefault()}>
+                      <button 
+                        className={`menu-item ${insideProgress && insideProgress.is_complete ? 'bg-gray-lighter' : 'bg-primary hover:bg-primary-hover'}`}
+                        disabled={insideProgress && insideProgress.is_complete}
+                        aria-label={getInsideButtonText()}
+                      >
+                        {getInsideButtonText()}
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* View Snag List Button - Only shown when checks are in progress and snags exist */}
+            {!showSnagListButton() && outsideSnagCount + insideSnagCount > 0 && (
               <div className="mt-4 text-center">
                 <Link href="/snags/summary">
                   <Button 
