@@ -51,8 +51,10 @@ export default function SnagListDetailPage({ params }: SnagListDetailPageProps) 
         setSnagList(list);
         
         // Load snags for this list
-        const snagData = await getAllUserSnags(user.id, params.id);
-        setSnags(snagData);
+        const snagData = await getAllUserSnags(user.id);
+        // Filter snags for this specific snag list
+        const filteredSnags = snagData.filter(snag => snag.snag_list_id === params.id);
+        setSnags(filteredSnags);
       } catch (error) {
         debug.error('Error loading snag list data:', error);
       } finally {
