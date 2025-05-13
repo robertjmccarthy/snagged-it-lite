@@ -7,7 +7,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useShare } from '@/contexts/ShareContext';
 import { Layout } from '@/components';
 import { debug } from '@/lib/debug';
-import { updateShareStatus } from '@/lib/api/share';
+import { updateShareStatus, getShareById } from '@/lib/api/share';
+import { supabase } from '@/lib/supabase/client';
+import { getActiveSnagList } from '@/lib/api/snag-list';
 
 // Component that uses searchParams (needs to be wrapped in Suspense)
 function SuccessPageContent() {
@@ -27,14 +29,49 @@ function SuccessPageContent() {
         return;
       }
       
-      // If we have a shareId, update its status to paid
+      // If we have a shareId, update its status to paid and link it to the active snag list
       if (shareId) {
         const updatePaymentStatus = async () => {
           try {
             setIsUpdating(true);
             debug.log(`Updating payment status for share: ${shareId}`);
+            
+            // Step 1: Update the share status to paid
             await updateShareStatus(shareId, 'paid');
             debug.log('Payment status updated successfully');
+            
+            // Step 2: Get the share details to get the address and builder info
+            const shareData = await getShareById(shareId);
+            if (!shareData) {
+              debug.error(`Could not find share with ID: ${shareId}`);
+              return;
+            }
+            
+            // Step 3: Get the active snag list for this user
+            const activeSnagList = await getActiveSnagList(user.id);
+            if (!activeSnagList) {
+              debug.error('No active snag list found for user');
+              return;
+            }
+            
+            // Step 4: Link the share to the active snag list
+            debug.log(`Linking share ${shareId} to snag list ${activeSnagList.id}`);
+            const { error: updateError } = await supabase
+              .from('snag_lists')
+              .update({
+                share_id: shareId,
+                address: shareData.address,
+                builder_name: shareData.builder_name,
+                builder_email: shareData.builder_email,
+                shared_at: new Date().toISOString()
+              })
+              .eq('id', activeSnagList.id);
+            
+            if (updateError) {
+              debug.error(`Error linking share to snag list: ${updateError.message}`);
+            } else {
+              debug.log('Successfully linked share to snag list');
+            }
           } catch (error) {
             debug.error(`Error updating payment status: ${error}`);
           } finally {

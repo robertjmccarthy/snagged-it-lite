@@ -95,3 +95,28 @@ export async function getUserShares(userId: string) {
     return [];
   }
 }
+
+/**
+ * Get a specific share by ID
+ * @param shareId The ID of the share to retrieve
+ * @returns The share object or null if not found
+ */
+export async function getShareById(shareId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('shares')
+      .select('*')
+      .eq('id', shareId)
+      .single();
+    
+    if (error) {
+      debug.error(`Error getting share by ID: ${JSON.stringify(error, null, 2)}`);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    debug.error(`Error in getShareById: ${JSON.stringify(error, null, 2)}`);
+    return null;
+  }
+}

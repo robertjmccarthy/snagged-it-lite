@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import { debug } from '@/lib/debug';
+import { getActiveSnagList } from '@/lib/api/snag-list';
 
 export interface ChecklistItem {
   id: number;
@@ -139,21 +140,41 @@ export async function getChecklistItemCount(categorySlug: string): Promise<numbe
   return count || 0;
 }
 
-// Get all snags for a specific user and checklist item
+// Get all snags for a specific user and checklist item that belong to the active snag list
 export async function getSnags(userId: string, checklistItemId: number): Promise<Snag[]> {
-  const { data, error } = await supabase
-    .from('snags')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('checklist_item_id', checklistItemId)
-    .order('created_at', { ascending: false });
+  try {
+    debug.log(`Fetching snags for user ${userId} and checklist item ${checklistItemId}`);
+    
+    // Step 1: Get the active snag list ID for this user
+    const activeSnagList = await getActiveSnagList(userId);
+    
+    if (!activeSnagList) {
+      debug.log('No active snag list found, returning empty array');
+      return [];
+    }
+    
+    debug.log(`Found active snag list: ${activeSnagList.id}`);
+    
+    // Step 2: Get snags that belong to this user, checklist item, and active snag list
+    const { data, error } = await supabase
+      .from('snags')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('checklist_item_id', checklistItemId)
+      .eq('snag_list_id', activeSnagList.id) // Only get snags from the active snag list
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching snags:', error);
-    throw error;
+    if (error) {
+      debug.error('Error fetching snags:', error);
+      throw error;
+    }
+
+    debug.log(`Found ${data?.length || 0} snags for checklist item ${checklistItemId}`);
+    return data || [];
+  } catch (error) {
+    debug.error(`Error in getSnags: ${error}`);
+    return [];
   }
-
-  return data || [];
 }
 
 /**
@@ -193,7 +214,37 @@ export async function createSnag(
       throw new Error('Either a note or a photo must be provided for a snag');
     }
     
-    // Insert the snag into the database
+    // Get the active snag list for this user
+    debug.log('Getting active snag list for user:', userId);
+    const activeSnagList = await getActiveSnagList(userId);
+    
+    // If no active snag list exists, create one
+    let snagListId = null;
+    if (activeSnagList) {
+      debug.log('Found active snag list:', activeSnagList.id);
+      snagListId = activeSnagList.id;
+    } else {
+      debug.log('No active snag list found, creating a new one');
+      const { data: newSnagList, error: createError } = await supabase
+        .from('snag_lists')
+        .insert({
+          user_id: userId,
+          name: `Snag List ${new Date().toLocaleDateString()}`,
+          is_active: true
+        })
+        .select('id')
+        .single();
+      
+      if (createError) {
+        debug.error('Error creating new snag list:', createError);
+        throw new Error(`Failed to create snag list: ${createError.message}`);
+      }
+      
+      snagListId = newSnagList.id;
+      debug.log('Created new active snag list:', snagListId);
+    }
+    
+    // Insert the snag into the database with the snag list ID
     const { data, error } = await supabase
       .from('snags')
       .insert([
@@ -202,6 +253,7 @@ export async function createSnag(
           checklist_item_id: checklistItemId,
           note,
           photo_url: photoUrl,
+          snag_list_id: snagListId, // Associate with the active snag list
         },
       ])
       .select()
@@ -340,64 +392,95 @@ export async function updateUserProgress(
   }
 }
 
-// Get count of snags for a user in a specific category
+// Get count of snags for a user in a specific category that belong to the active snag list
 export async function getSnagCountForCategory(userId: string, categorySlug: string): Promise<number> {
-  // First get the category ID
-  const { data: categoryData, error: categoryError } = await supabase
-    .from('checklist_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .single();
+  try {
+    debug.log(`Counting snags for user ${userId} in category ${categorySlug}`);
+    
+    // Step 1: Get the active snag list ID for this user
+    const activeSnagList = await getActiveSnagList(userId);
+    
+    if (!activeSnagList) {
+      debug.log('No active snag list found, returning 0');
+      return 0;
+    }
+    
+    debug.log(`Found active snag list: ${activeSnagList.id}`);
+    
+    // Step 2: Get the category ID
+    const { data: categoryData, error: categoryError } = await supabase
+      .from('checklist_categories')
+      .select('id')
+      .eq('slug', categorySlug)
+      .single();
 
-  if (categoryError) {
-    console.error('Error fetching category ID:', categoryError);
-    throw categoryError;
-  }
+    if (categoryError) {
+      debug.error('Error fetching category ID:', categoryError);
+      throw categoryError;
+    }
 
-  // Then get all checklist item IDs for this category
-  const { data: itemsData, error: itemsError } = await supabase
-    .from('checklist_items')
-    .select('id')
-    .eq('category_id', categoryData.id);
+    // Step 3: Get all checklist item IDs for this category
+    const { data: itemsData, error: itemsError } = await supabase
+      .from('checklist_items')
+      .select('id')
+      .eq('category_id', categoryData.id);
 
-  if (itemsError) {
-    console.error('Error fetching checklist items:', itemsError);
-    throw itemsError;
-  }
+    if (itemsError) {
+      debug.error('Error fetching checklist items:', itemsError);
+      throw itemsError;
+    }
 
-  // Extract just the IDs into an array
-  const itemIds = itemsData.map(item => item.id);
+    // Extract just the IDs into an array
+    const itemIds = itemsData.map(item => item.id);
 
-  // If no items found, return 0
-  if (itemIds.length === 0) {
+    // If no items found, return 0
+    if (itemIds.length === 0) {
+      debug.log('No checklist items found for this category, returning 0');
+      return 0;
+    }
+
+    // Step 4: Count the snags that belong to the active snag list
+    const { count, error } = await supabase
+      .from('snags')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('snag_list_id', activeSnagList.id) // Only count snags from the active snag list
+      .in('checklist_item_id', itemIds);
+
+    if (error) {
+      debug.error('Error counting snags for category:', error);
+      throw error;
+    }
+
+    debug.log(`Found ${count || 0} snags for category ${categorySlug}`);
+    return count || 0;
+  } catch (error) {
+    debug.error(`Error in getSnagCountForCategory: ${error}`);
     return 0;
   }
-
-  // Now count the snags
-  const { count, error } = await supabase
-    .from('snags')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .in('checklist_item_id', itemIds);
-
-  if (error) {
-    console.error('Error counting snags for category:', error);
-    throw error;
-  }
-
-  return count || 0;
 }
 
-// Get all snags for a user with checklist item details
+// Get all snags for a user with checklist item details that belong to the active snag list
 export async function getAllUserSnags(userId: string): Promise<any[]> {
   try {
-    debug.log(`Fetching all snags for user ${userId}`);
+    debug.log(`Fetching all snags for user ${userId} from active snag list`);
     
-    // Basic query without nested relations
+    // Step 1: Get the active snag list ID for this user
+    const activeSnagList = await getActiveSnagList(userId);
+    
+    if (!activeSnagList) {
+      debug.log('No active snag list found, returning empty array');
+      return [];
+    }
+    
+    debug.log(`Found active snag list: ${activeSnagList.id}`);
+    
+    // Step 2: Get all snags that belong to this user and active snag list
     const { data, error } = await supabase
       .from('snags')
       .select('*')
       .eq('user_id', userId)
+      .eq('snag_list_id', activeSnagList.id) // Only get snags from the active snag list
       .order('created_at', { ascending: false });
 
     if (error) {

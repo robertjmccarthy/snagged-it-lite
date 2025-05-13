@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { debug } from '@/lib/debug';
+import { getActiveSnagList } from '@/lib/api/snag-list';
 
 /**
  * Component that handles resetting a user's progress
@@ -26,19 +27,66 @@ export default function ResetProgress() {
       setIsResetting(true);
       debug.log('Initiating progress reset for user:', user.id);
       
-      // Step 1: Delete all snags for the user
-      debug.log('Deleting all snags for user...');
+      // Step 1: Find the current active snag list (if any)
+      debug.log('Finding current active snag list...');
+      const activeSnagList = await getActiveSnagList(user.id);
+      
+      if (activeSnagList) {
+        debug.log('Found active snag list:', activeSnagList.id);
+        
+        // Deactivate the current snag list (mark it as inactive)
+        const { error: updateError } = await supabase
+          .from('snag_lists')
+          .update({
+            is_active: false,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', activeSnagList.id);
+        
+        if (updateError) {
+          debug.error('Error deactivating snag list:', updateError);
+          throw new Error(`Failed to deactivate snag list: ${updateError.message}`);
+        }
+        
+        debug.log('Successfully deactivated previous snag list');
+      } else {
+        debug.log('No active snag list found to deactivate');
+      }
+      
+      // Step 2: Create a new active snag list
+      debug.log('Creating new active snag list...');
+      const { data: newSnagList, error: createError } = await supabase
+        .from('snag_lists')
+        .insert({
+          user_id: user.id,
+          name: `Snag List ${new Date().toLocaleDateString()}`,
+          is_active: true
+        })
+        .select('id')
+        .single();
+      
+      if (createError) {
+        debug.error('Error creating new snag list:', createError);
+        throw new Error(`Failed to create new snag list: ${createError.message}`);
+      }
+      
+      debug.log('New active snag list created:', newSnagList.id);
+      
+      // Step 3: Delete snags that aren't associated with any snag list
+      // This ensures we only delete orphaned snags and preserve snags linked to previous lists
+      debug.log('Deleting orphaned snags...');
       const { error: snagDeleteError } = await supabase
         .from('snags')
         .delete()
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .is('snag_list_id', null);
       
       if (snagDeleteError) {
-        debug.error('Error deleting snags:', snagDeleteError);
-        throw new Error(`Failed to delete snags: ${snagDeleteError.message}`);
+        debug.error('Error deleting orphaned snags:', snagDeleteError);
+        throw new Error(`Failed to delete orphaned snags: ${snagDeleteError.message}`);
       }
       
-      debug.log('Successfully deleted all snags');
+      debug.log('Successfully deleted orphaned snags');
       
       // Step 2: Get the existing progress records
       debug.log('Fetching existing progress records...');

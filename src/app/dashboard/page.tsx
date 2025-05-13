@@ -10,6 +10,7 @@ import { getUserShares } from '@/lib/api/share';
 import { debug } from '@/lib/debug';
 import { Layout, Section, Card, Button } from '@/components';
 import ResetProgress from '@/components/ResetProgress';
+import { supabase } from '@/lib/supabase/client';
 
 // Component to handle the actual dashboard logic
 function DashboardContent() {
@@ -146,10 +147,41 @@ function DashboardContent() {
       const shares = await getUserShares(user.id);
       setUserShares(shares);
       
-      // Set the latest share with status 'paid'
-      const paidShares = shares.filter(share => share.status === 'paid');
+      // Reset latest share by default
+      setLatestShare(null);
+      
+      // Get the active snag list with all relevant details
+      const { data: activeSnagList, error: snagListError } = await supabase
+        .from('snag_lists')
+        .select('id, share_id, shared_at')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+        
+      if (snagListError) {
+        debug.error('Error fetching active snag list:', snagListError);
+        return;
+      }
+      
+      debug.log('Active snag list:', activeSnagList);
+      
+      // If no active snag list or it doesn't have a share_id, don't show shared version
+      if (!activeSnagList || !activeSnagList.share_id) {
+        debug.log('Active snag list has no associated share');
+        return;
+      }
+      
+      // Only set the latest share if it's associated with the current active snag list
+      // AND it has been paid
+      const paidShares = shares.filter(
+        share => share.status === 'paid' && share.id === activeSnagList.share_id
+      );
+      
       if (paidShares.length > 0) {
-        setLatestShare(paidShares[0]); // The most recent paid share
+        debug.log('Found paid share for current active snag list:', paidShares[0]);
+        setLatestShare(paidShares[0]); // The share associated with the current active snag list
+      } else {
+        debug.log('No paid shares found for current active snag list');
       }
       
       debug.log('Dashboard: User shares loaded:', shares.length);
@@ -425,7 +457,12 @@ function DashboardContent() {
                   <>
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                       <div className="mb-4">
-                        <h2 className="text-xl font-semibold mb-2">There are {outsideSnagCount + insideSnagCount} snags on your list</h2>
+                        <h2 className="text-xl font-semibold mb-2">
+                          {outsideSnagCount + insideSnagCount === 1 
+                            ? "There is 1 snag on your list" 
+                            : `There are ${outsideSnagCount + insideSnagCount} snags on your list`
+                          }
+                        </h2>
                         <p className="text-gray-dark mb-4">
                           Share your list with your builder so they can get onto sorting the snags, and you can enjoy your new home.
                         </p>
