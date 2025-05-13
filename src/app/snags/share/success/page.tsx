@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +10,8 @@ import { Button } from '@/components';
 import { debug } from '@/lib/debug';
 import { updateShareStatus } from '@/lib/api/share';
 
-export default function SuccessPage() {
+// Component that uses searchParams (needs to be wrapped in Suspense)
+function SuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -87,5 +88,20 @@ export default function SuccessPage() {
         </div>
       </div>
     </ShareLayout>
+  );
+}
+
+// Main component with Suspense boundary
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <ShareLayout title="">
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </ShareLayout>
+    }>
+      <SuccessPageContent />
+    </Suspense>
   );
 }
