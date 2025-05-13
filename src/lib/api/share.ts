@@ -10,6 +10,9 @@ import { ShareData } from '@/contexts/ShareContext';
  */
 export async function saveShareData(userId: string, shareData: ShareData): Promise<string | null> {
   try {
+    // Log the data being saved for debugging
+    debug.log(`Saving share data for user: ${userId} ${JSON.stringify(shareData, null, 2)}`);
+    
     // Create a record in the shares table
     const { data, error } = await supabase
       .from('shares')
@@ -27,13 +30,15 @@ export async function saveShareData(userId: string, shareData: ShareData): Promi
       .single();
     
     if (error) {
-      debug.error('Error saving share data:', error);
+      debug.error(`Error saving share data: ${JSON.stringify(error, null, 2)}`);
       throw error;
     }
     
+    debug.log(`Share data saved successfully with ID: ${data?.id}`);
+    
     return data?.id || null;
   } catch (error) {
-    debug.error('Error in saveShareData:', error);
+    debug.error(`Error in saveShareData: ${JSON.stringify(error, null, 2)}`);
     return null;
   }
 }
@@ -55,13 +60,13 @@ export async function updateShareStatus(shareId: string, status: 'pending_paymen
       .eq('id', shareId);
     
     if (error) {
-      debug.error('Error updating share status:', error);
+      debug.error(`Error updating share status: ${JSON.stringify(error, null, 2)}`);
       throw error;
     }
     
     return true;
   } catch (error) {
-    debug.error('Error in updateShareStatus:', error);
+    debug.error(`Error in updateShareStatus: ${JSON.stringify(error, null, 2)}`);
     return false;
   }
 }
@@ -80,13 +85,13 @@ export async function getUserShares(userId: string) {
       .order('created_at', { ascending: false });
     
     if (error) {
-      debug.error('Error getting user shares:', error);
+      debug.error(`Error getting user shares: ${JSON.stringify(error, null, 2)}`);
       throw error;
     }
     
     return data || [];
   } catch (error) {
-    debug.error('Error in getUserShares:', error);
+    debug.error(`Error in getUserShares: ${JSON.stringify(error, null, 2)}`);
     return [];
   }
 }

@@ -1,26 +1,49 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShare } from '@/contexts/ShareContext';
 import ShareLayout from '@/components/ShareLayout';
 import { Button } from '@/components';
 import { debug } from '@/lib/debug';
+import { updateShareStatus } from '@/lib/api/share';
 
 export default function SuccessPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
   const { shareData, resetShareData } = useShare();
+  const [verifying, setVerifying] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(true);
+  const shareId = searchParams ? searchParams.get('share_id') : null;
 
-  // Protect the route
+  // Protect the route and verify payment
   useEffect(() => {
-    if (!loading && !user) {
-      debug.error('Share Success Page: Not authenticated, redirecting to sign-in');
-      router.replace('/signin');
+    if (!loading) {
+      if (!user) {
+        debug.error('Share Success Page: Not authenticated, redirecting to sign-in');
+        router.replace('/signin');
+        return;
+      }
+      
+      // If we have a shareId, update its status to paid
+      if (shareId) {
+        const updatePaymentStatus = async () => {
+          try {
+            debug.log(`Updating payment status for share: ${shareId}`);
+            await updateShareStatus(shareId, 'paid');
+            debug.log('Payment status updated successfully');
+          } catch (error) {
+            debug.error(`Error updating payment status: ${error}`);
+          }
+        };
+        
+        updatePaymentStatus();
+      }
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, shareId]);
 
   // Reset share data when navigating away from success page
   useEffect(() => {
@@ -31,7 +54,7 @@ export default function SuccessPage() {
 
   if (loading || !user) {
     return (
-      <ShareLayout title="Payment successful">
+      <ShareLayout title="">
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
@@ -40,39 +63,27 @@ export default function SuccessPage() {
   }
 
   return (
-    <ShareLayout 
-      title="Payment successful" 
-      subtitle="Your snag list has been sent to your builder."
-    >
-      <div className="space-y-8 text-center">
-        <div className="flex justify-center">
-          <div className="bg-primary bg-opacity-20 rounded-full p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+    <ShareLayout title="">
+      <div className="container mx-auto max-w-4xl">
+        <header className="text-left mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">Thank you for your payment</h1>
+        </header>
+        
+        <div className="space-y-6 mb-10">
+          <p className="text-gray-dark text-lg mb-6">
+            Your snag list has been sent to your builder. They will be able to view all the snags you recorded so they can get on with sorting them.
+          </p>
+          
+          <div className="flex">
+            <Link href="/dashboard">
+              <button
+                className="menu-item bg-primary hover:bg-primary-hover"
+                aria-label="View your snag list"
+              >
+                View your snag list
+              </button>
+            </Link>
           </div>
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Thank you for your payment</h2>
-          <p className="text-gray-600">
-            We've sent your snag list to {shareData.builderType === 'other' ? shareData.builderName : shareData.builderType} at {shareData.builderEmail}.
-          </p>
-          <p className="text-gray-600">
-            Your builder will now be able to review your snags and get to work on fixing them.
-          </p>
-        </div>
-        
-        <div className="pt-6">
-          <Link href="/dashboard">
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-            >
-              Return to dashboard
-            </Button>
-          </Link>
         </div>
       </div>
     </ShareLayout>

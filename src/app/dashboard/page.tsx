@@ -4,7 +4,9 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
-import { getChecklistItemCount, getUserProgress, getSnagCountForCategory } from '@/lib/api/checklist';
+import Image from 'next/image';
+import { getChecklistItemCount, getUserProgress, getSnagCountForCategory, getAllUserSnags } from '@/lib/api/checklist';
+import { getUserShares } from '@/lib/api/share';
 import { debug } from '@/lib/debug';
 import { Layout, Section, Card, Button } from '@/components';
 import ResetProgress from '@/components/ResetProgress';
@@ -21,6 +23,10 @@ function DashboardContent() {
   const [outsideSnagCount, setOutsideSnagCount] = useState(0);
   const [insideSnagCount, setInsideSnagCount] = useState(0);
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
+  const [userShares, setUserShares] = useState<any[]>([]);
+  const [latestShare, setLatestShare] = useState<any>(null);
+  const [userSnags, setUserSnags] = useState<any[]>([]);
+  const [isLoadingSnags, setIsLoadingSnags] = useState(true);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -108,7 +114,49 @@ function DashboardContent() {
   // Load user progress data on initial mount and when user changes
   useEffect(() => {
     loadProgressData();
+    if (user && !localLoading) {
+      loadUserShares();
+      loadUserSnags();
+    }
   }, [localLoading, user]);
+  
+  // Load user snags data
+  const loadUserSnags = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingSnags(true);
+      debug.log('Dashboard: Loading user snags data...');
+      const snags = await getAllUserSnags(user.id);
+      setUserSnags(snags);
+      debug.log('Dashboard: User snags loaded:', snags.length);
+      setIsLoadingSnags(false);
+    } catch (error) {
+      debug.error('Error loading user snags:', error);
+      setIsLoadingSnags(false);
+    }
+  };
+  
+  // Load user shares data
+  const loadUserShares = async () => {
+    if (!user) return;
+    
+    try {
+      debug.log('Dashboard: Loading user shares data...');
+      const shares = await getUserShares(user.id);
+      setUserShares(shares);
+      
+      // Set the latest share with status 'paid'
+      const paidShares = shares.filter(share => share.status === 'paid');
+      if (paidShares.length > 0) {
+        setLatestShare(paidShares[0]); // The most recent paid share
+      }
+      
+      debug.log('Dashboard: User shares loaded:', shares.length);
+    } catch (error) {
+      debug.error('Error loading user shares:', error);
+    }
+  };
   
   // Use a combination of approaches to ensure data is refreshed when returning to the dashboard
   useEffect(() => {
@@ -264,21 +312,116 @@ function DashboardContent() {
       <div className="container mx-auto max-w-4xl">
           <header className="text-left mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              {showCompletionBox() 
-                ? "You're all done 🎉" 
-                : "Hello homeowner 👋"
+              {latestShare && (outsideSnagCount > 0 || insideSnagCount > 0)
+                ? "Your snag list has been shared" 
+                : showCompletionBox() 
+                  ? "You're all done 🎉" 
+                  : "Hello homeowner 👋"
               }
             </h1>
-
           </header>
           
           {/* Progress Cards */}
           <div className="space-y-6 mb-10">
             {/* Show completion box when all checks are completed */}
             {showCompletionBox() && (
-              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                {outsideSnagCount + insideSnagCount > 0 ? (
-                  /* Content for users with snags */
+              <>
+                {latestShare ? (
+                  /* Content for users who have shared their snag list */
+                  <>
+                    {/* Details Box */}
+                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      <h2 className="text-xl font-semibold mb-2">Details</h2>
+                      <div className="space-y-3 mt-4">
+                        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Home address</h3>
+                            <p className="mt-1 text-base text-gray-900 whitespace-pre-line">{latestShare.address}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Builder</h3>
+                            <p className="mt-1 text-base text-gray-900">{latestShare.builder_name}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Builder email</h3>
+                            <p className="mt-1 text-base text-gray-900">{latestShare.builder_email}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Shared on</h3>
+                            <p className="mt-1 text-base text-gray-900">{new Date(latestShare.updated_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-start pb-3">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Snags</h3>
+                            <p className="mt-1 text-base text-gray-900">{outsideSnagCount + insideSnagCount} snags recorded</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Recorded Snags Box */}
+                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-6">
+                      <h2 className="text-xl font-semibold mb-4">Your recorded snags</h2>
+                      {isLoadingSnags ? (
+                        <div className="flex justify-center py-4">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                        </div>
+                      ) : userSnags.length > 0 ? (
+                        <div className="space-y-4">
+                          {userSnags.map((snag) => (
+                            <div key={snag.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="text-base font-medium">{snag.checklist_item?.friendly_text || 'Snag'}</h4>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(snag.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              
+                              {snag.note && (
+                                <p className="text-sm text-gray-700 mb-2">{snag.note}</p>
+                              )}
+                              
+                              {snag.photo_url && (
+                                <div className="mt-2 relative h-40 w-full">
+                                  <img 
+                                    src={snag.photo_url} 
+                                    alt="Snag photo" 
+                                    className="rounded-md object-cover h-full w-full"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 italic">No snags found</p>
+                      )}
+                    </div>
+                    
+                    {/* Start New Snag List Box */}
+                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-6">
+                      <h2 className="text-xl font-semibold mb-4">Start a new snag list</h2>
+                      <p className="text-gray-dark mb-4">
+                        Ready to create a new snag list? Click the button below to reset your progress and start fresh.
+                      </p>
+                      <div className="flex">
+                        <ResetProgress />
+                      </div>
+                    </div>
+                  </>
+                ) : outsideSnagCount + insideSnagCount > 0 ? (
+                  /* Content for users with snags but not shared yet */
                   <>
                     <div className="mb-4">
                       <h2 className="text-xl font-semibold mb-2">There are {outsideSnagCount + insideSnagCount} snags on your list</h2>
@@ -303,21 +446,23 @@ function DashboardContent() {
                 ) : (
                   /* Content for users with no snags */
                   <>
-                    <div className="mb-4">
-                      <h2 className="text-xl font-semibold mb-2">You don't have any snags. Amazing!</h2>
-                      <p className="text-gray-dark mb-4">
-                        Enjoy living in your new home, and if you do find any snags, start a new snag list.
-                      </p>
-                    </div>
-                    
-                    <div className="mb-6"></div>
-                    
-                    <div className="flex">
-                      <ResetProgress />
+                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      <div className="mb-4">
+                        <h2 className="text-xl font-semibold mb-2">You don't have any snags. Amazing!</h2>
+                        <p className="text-gray-dark mb-4">
+                          Enjoy living in your new home, and if you do find any snags, start a new snag list.
+                        </p>
+                      </div>
+                      
+                      <div className="mb-6"></div>
+                      
+                      <div className="flex">
+                        <ResetProgress />
+                      </div>
                     </div>
                   </>
                 )}
-              </div>
+              </>
             )}
             
             {/* Only show check boxes if not all checks are completed */}

@@ -8,7 +8,8 @@ import { useShare } from '@/contexts/ShareContext';
 import ShareLayout from '@/components/ShareLayout';
 import { Button } from '@/components';
 import { debug } from '@/lib/debug';
-import { saveShareData } from '@/lib/api/share';
+import { saveShareData, updateShareStatus } from '@/lib/api/share';
+import { redirectToStripeCheckout } from '@/lib/stripe/checkout';
 
 export default function ConfirmPage() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function ConfirmPage() {
     setIsSubmitting(true);
     
     try {
+      debug.log(`Starting payment flow for user: ${user.id}`);
+      
       // Save the share data to Supabase
       const shareId = await saveShareData(user.id, shareData);
       
@@ -48,13 +51,26 @@ export default function ConfirmPage() {
         throw new Error('Failed to save share data');
       }
       
-      // In a real implementation, this would redirect to a payment gateway
-      // with the shareId as a reference
+      debug.log(`Share data saved with ID: ${shareId}`);
       
-      // For now, just redirect to a success page
-      router.push('/snags/share/success');
-    } catch (error) {
-      debug.error('Error processing payment:', error);
+      // Update share status to pending payment
+      await updateShareStatus(shareId, 'pending_payment');
+      
+      // Redirect to Stripe checkout using our simplified helper
+      const { success, error } = await redirectToStripeCheckout(
+        shareId,
+        user.email || undefined
+      );
+      
+      if (!success) {
+        throw new Error(error || 'Error redirecting to checkout');
+      }
+      
+      // The redirect will happen automatically if successful
+      
+      // The redirect will happen automatically
+    } catch (error: any) {
+      debug.error(`Error processing payment: ${error.message || error}`);
       setIsSubmitting(false);
     }
   };
@@ -157,10 +173,10 @@ export default function ConfirmPage() {
           <div className="flex">
             <button
               onClick={handleSubmit}
-              className="menu-item bg-primary hover:bg-primary-hover"
               disabled={isSubmitting}
               aria-busy={isSubmitting}
               aria-label="Confirm details and go to pay"
+              className="menu-item bg-primary hover:bg-primary-hover w-full sm:w-auto"
             >
               {isSubmitting ? 'Processing...' : 'Confirm details and go to pay'}
             </button>
