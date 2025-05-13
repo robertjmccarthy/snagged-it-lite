@@ -50,7 +50,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard" className="menu-item">
-                  Your snag list
+                  Snag your home
                 </Link>
                 <button 
                   onClick={handleSignOut} 
@@ -126,7 +126,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
           {isAuthenticated ? (
             <div className="flex flex-col space-y-3">
               <Link href="/dashboard" className="menu-item block">
-                Your snag list
+                Snag your home
               </Link>
               <div className="pt-2 border-t border-gray-200">
                 <button

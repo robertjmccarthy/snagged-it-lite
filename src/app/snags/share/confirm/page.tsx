@@ -101,8 +101,8 @@ export default function ConfirmPage() {
           {/* Full Name */}
           <div className="flex justify-between items-start border-b border-gray-200 pb-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Full name</h3>
-              <p className="mt-1 text-base text-gray-900">{shareData.fullName}</p>
+              <h3 className="text-sm font-medium text-gray-500 mb-0">Full name</h3>
+              <p className="text-base text-gray-900">{shareData.fullName}</p>
             </div>
             <Link 
               href="/snags/share/name?returnToConfirm=true" 
@@ -116,8 +116,8 @@ export default function ConfirmPage() {
           {/* Address */}
           <div className="flex justify-between items-start border-b border-gray-200 pb-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Home address</h3>
-              <p className="mt-1 text-base text-gray-900 whitespace-pre-line">{shareData.address}</p>
+              <h3 className="text-sm font-medium text-gray-500 mb-0">Home address</h3>
+              <p className="text-base text-gray-900 whitespace-pre-line">{shareData.address}</p>
             </div>
             <Link 
               href="/snags/share/address?returnToConfirm=true" 
@@ -131,8 +131,8 @@ export default function ConfirmPage() {
           {/* Builder */}
           <div className="flex justify-between items-start border-b border-gray-200 pb-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Builder</h3>
-              <p className="mt-1 text-base text-gray-900">{builderDisplayName}</p>
+              <h3 className="text-sm font-medium text-gray-500 mb-0">Builder</h3>
+              <p className="text-base text-gray-900">{builderDisplayName}</p>
             </div>
             <Link 
               href="/snags/share/builder?returnToConfirm=true" 
@@ -146,8 +146,8 @@ export default function ConfirmPage() {
           {/* Builder Email */}
           <div className="flex justify-between items-start border-b border-gray-200 pb-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Builder email</h3>
-              <p className="mt-1 text-base text-gray-900">{shareData.builderEmail}</p>
+              <h3 className="text-sm font-medium text-gray-500 mb-0">Builder email</h3>
+              <p className="text-base text-gray-900">{shareData.builderEmail}</p>
             </div>
             <Link 
               href="/snags/share/builder-email?returnToConfirm=true" 

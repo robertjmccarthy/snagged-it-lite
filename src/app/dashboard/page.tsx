@@ -423,24 +423,26 @@ function DashboardContent() {
                 ) : outsideSnagCount + insideSnagCount > 0 ? (
                   /* Content for users with snags but not shared yet */
                   <>
-                    <div className="mb-4">
-                      <h2 className="text-xl font-semibold mb-2">There are {outsideSnagCount + insideSnagCount} snags on your list</h2>
-                      <p className="text-gray-dark mb-4">
-                        Share your list with your builder so they can get onto sorting the snags, and you can enjoy your new home.
-                      </p>
-                    </div>
-                    
-                    <div className="mb-6"></div>
-                    
-                    <div className="flex">
-                      <Link href="/snags/share">
-                        <button 
-                          className="menu-item bg-primary hover:bg-primary-hover"
-                          aria-label="Share your snag list with your builder"
-                        >
-                          Share your snag list
-                        </button>
-                      </Link>
+                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      <div className="mb-4">
+                        <h2 className="text-xl font-semibold mb-2">There are {outsideSnagCount + insideSnagCount} snags on your list</h2>
+                        <p className="text-gray-dark mb-4">
+                          Share your list with your builder so they can get onto sorting the snags, and you can enjoy your new home.
+                        </p>
+                      </div>
+                      
+                      <div className="mb-6"></div>
+                      
+                      <div className="flex">
+                        <Link href="/snags/share">
+                          <button 
+                            className="menu-item bg-primary hover:bg-primary-hover"
+                            aria-label="Share your snag list with your builder"
+                          >
+                            Share your snag list
+                          </button>
+                        </Link>
+                      </div>
                     </div>
                   </>
                 ) : (
