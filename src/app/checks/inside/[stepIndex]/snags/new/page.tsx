@@ -9,7 +9,9 @@ import { debug } from '@/lib/debug';
 import { 
   getChecklistItemByOrder,
   createSnag,
-  uploadSnagPhoto
+  uploadSnagPhoto,
+  getChecklistItemCount,
+  updateUserProgress
 } from '@/lib/api/checklist';
 
 interface SnagEntryPageProps {
@@ -76,6 +78,10 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     initializeSnagEntry();
   }, [user, loading, router, stepIndex, isValidStep]);
 
+  /**
+   * Handle photo file selection
+   * Validates file type and size, creates a preview, and updates state
+   */
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,15 +92,16 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
       size: `${(file.size / 1024).toFixed(2)} KB` 
     });
 
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      const errorMsg = 'Please select an image file';
+    // Check file type - only allow specific image formats
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validImageTypes.includes(file.type)) {
+      const errorMsg = 'Please select a valid image file (JPEG, PNG, GIF, or WebP)';
       debug.error(errorMsg, { fileType: file.type });
       setError(errorMsg);
       return;
     }
 
-    // Check file size (limit to 5MB)
+    // Check file size (limit to 5MB for better mobile performance)
     if (file.size > 5 * 1024 * 1024) {
       const errorMsg = 'Image size should be less than 5MB';
       debug.error(errorMsg, { fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB` });
@@ -105,7 +112,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     setPhotoFile(file);
     setError(null);
 
-    // Create preview
+    // Create preview for immediate user feedback
     const reader = new FileReader();
     reader.onloadend = () => {
       debug.log('Photo preview created');
@@ -128,9 +135,14 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
     }
   };
 
+  /**
+   * Handle form submission
+   * Uploads photo if present, creates snag, and updates user progress
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required data
     if (!user || !checklistItem) {
       debug.error('Cannot submit: user or checklist item is missing', { 
         hasUser: !!user, 
@@ -139,6 +151,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
       return;
     }
     
+    // Require at least a note or photo
     if (!note && !photoFile) {
       const errorMsg = 'Please add a note or upload a photo';
       debug.error(errorMsg);
@@ -146,6 +159,7 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
       return;
     }
 
+    // Start submission process
     setIsSaving(true);
     setError(null);
     debug.log('Starting snag submission process', { 
@@ -160,32 +174,75 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
       
       // Upload photo if one was selected
       if (photoFile) {
-        debug.log('Uploading photo...');
+        debug.log('Uploading photo...', {
+          fileName: photoFile.name,
+          fileType: photoFile.type,
+          fileSize: `${(photoFile.size / 1024).toFixed(2)} KB`
+        });
+        
         try {
+          // Show loading state for photo upload
+          setError('Uploading photo...');
+          
+          // Upload the photo to Supabase storage
           photoUrl = await uploadSnagPhoto(user.id, photoFile);
           debug.log('Photo uploaded successfully', { photoUrl });
-        } catch (photoError) {
-          debug.error('Photo upload failed, continuing with note only', photoError);
-          // Continue with just the note if photo upload fails
+          
+          // Clear the loading message
+          setError(null);
+        } catch (photoError: any) {
+          debug.error('Photo upload failed:', photoError);
+          
+          // If the note is empty and photo upload failed, we can't proceed
+          if (!note.trim()) {
+            setError(`Photo upload failed: ${photoError.message || 'Unknown error'}. Please try again or add a text note.`);
+            setIsSaving(false);
+            return;
+          }
+          
+          // If we have a note, show warning but continue with just the note
+          setError(`Photo couldn't be uploaded. Your snag will be saved with the note only.`);
+          await new Promise(resolve => setTimeout(resolve, 1500));
         }
       }
 
       // Create the snag
       debug.log('Creating snag record...');
-      await createSnag(
-        user.id,
-        checklistItem.id,
-        note.trim() || null,
-        photoUrl
-      );
-      debug.log('Snag created successfully');
-
-      // Navigate back to the step page
-      debug.log(`Navigating back to step page: /checks/inside/${stepIndex}`);
-      router.push(`/checks/inside/${stepIndex}`);
-    } catch (error) {
-      debug.error('Error saving snag:', error);
-      setError('Failed to save snag. Please try again.');
+      
+      try {
+        const snag = await createSnag(
+          user.id,
+          checklistItem.id,
+          note.trim() || null,
+          photoUrl
+        );
+        debug.log('Snag created successfully:', snag);
+        
+        // Get total number of steps to determine if this is the last step
+        const totalSteps = await getChecklistItemCount('inside');
+        const MAX_STEPS = 18; // Hard-coded maximum of 18 steps for inside checks
+        const isLastStep = stepIndex === totalSteps || stepIndex === MAX_STEPS;
+        
+        // Update user progress for this category
+        try {
+          await updateUserProgress(user.id, 'inside', stepIndex, isLastStep);
+          debug.log(`Updated user progress for inside category, step ${stepIndex}, complete: ${isLastStep}`);
+        } catch (progressError: any) {
+          // Log but don't block the flow if progress update fails
+          debug.error('Error updating user progress:', progressError);
+        }
+        
+        // Navigate back to the step page
+        debug.log(`Navigating back to step page: /checks/inside/${stepIndex}`);
+        router.push(`/checks/inside/${stepIndex}`);
+      } catch (snagError: any) {
+        debug.error('Error creating snag:', snagError);
+        setError(`Failed to save snag: ${snagError.message || 'Please try again.'}`);
+        setIsSaving(false);
+      }
+    } catch (error: any) {
+      debug.error('Unexpected error in snag submission:', error);
+      setError(`An unexpected error occurred: ${error.message || 'Please try again.'}`);
       setIsSaving(false);
     }
   };

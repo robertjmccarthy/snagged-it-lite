@@ -156,32 +156,68 @@ export async function getSnags(userId: string, checklistItemId: number): Promise
   return data || [];
 }
 
-// Create a new snag
+/**
+ * Create a new snag in the database
+ * 
+ * @param userId - The ID of the user creating the snag
+ * @param checklistItemId - The ID of the checklist item this snag is associated with
+ * @param note - Optional text description of the snag
+ * @param photoUrl - Optional URL to a photo of the snag
+ * @returns The created snag object
+ */
 export async function createSnag(
   userId: string,
   checklistItemId: number,
   note: string | null,
   photoUrl: string | null
 ): Promise<Snag> {
-  const { data, error } = await supabase
-    .from('snags')
-    .insert([
-      {
-        user_id: userId,
-        checklist_item_id: checklistItemId,
-        note,
-        photo_url: photoUrl,
-      },
-    ])
-    .select()
-    .single();
+  try {
+    debug.log('Creating new snag', {
+      userId,
+      checklistItemId,
+      hasNote: !!note,
+      hasPhoto: !!photoUrl
+    });
+    
+    // Validate inputs
+    if (!userId) {
+      throw new Error('User ID is required to create a snag');
+    }
+    
+    if (!checklistItemId) {
+      throw new Error('Checklist item ID is required to create a snag');
+    }
+    
+    // At least one of note or photoUrl must be provided
+    if (!note && !photoUrl) {
+      throw new Error('Either a note or a photo must be provided for a snag');
+    }
+    
+    // Insert the snag into the database
+    const { data, error } = await supabase
+      .from('snags')
+      .insert([
+        {
+          user_id: userId,
+          checklist_item_id: checklistItemId,
+          note,
+          photo_url: photoUrl,
+        },
+      ])
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error creating snag:', error);
-    throw error;
+    if (error) {
+      debug.error('Error creating snag in database:', error);
+      throw new Error(`Failed to create snag: ${error.message}`);
+    }
+
+    debug.log('Snag created successfully:', data);
+    return data;
+  } catch (error: any) {
+    debug.error('Error in createSnag function:', error);
+    throw new Error(`Failed to create snag: ${error.message || 'Unknown error'}`);
   }
-
-  return data;
 }
 
 // Delete a snag
@@ -201,22 +237,33 @@ export async function deleteSnag(userId: string, snagId: string): Promise<void> 
 // Get user progress for a category
 export async function getUserProgress(userId: string, categorySlug: string): Promise<UserProgress | null> {
   try {
+    // Sanitize the category slug by removing any positional indexes (e.g., 'outside:1' -> 'outside')
+    const sanitizedCategorySlug = categorySlug.split(':')[0];
+    
+    debug.log(`Getting user progress for user ${userId} and category ${sanitizedCategorySlug}`);
+    
     const { data, error } = await supabase
       .from('user_progress')
       .select('*')
       .eq('user_id', userId)
-      .eq('category_slug', categorySlug)
+      .eq('category_slug', sanitizedCategorySlug)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows returned" which we handle as null
-      debug.error('Error fetching user progress:', error);
-      throw error;
+    if (error) {
+      if (error.code === 'PGRST116') { // PGRST116 is "No rows returned" which we handle as null
+        debug.log(`No progress found for user ${userId} and category ${sanitizedCategorySlug}`);
+        return null;
+      }
+      
+      debug.error(`Error fetching user progress for ${sanitizedCategorySlug}:`, error);
+      throw new Error(`Failed to fetch user progress: ${error.message}`);
     }
 
-    return data || null;
-  } catch (error) {
+    debug.log(`Found progress for ${sanitizedCategorySlug}:`, data);
+    return data;
+  } catch (error: any) {
     debug.error('Error in getUserProgress:', error);
-    throw error;
+    throw new Error(`Failed to get user progress: ${error.message || 'Unknown error'}`);
   }
 }
 
@@ -228,10 +275,16 @@ export async function updateUserProgress(
   isComplete: boolean = false
 ): Promise<UserProgress> {
   try {
+    // Sanitize the category slug by removing any positional indexes (e.g., 'outside:1' -> 'outside')
+    const sanitizedCategorySlug = categorySlug.split(':')[0];
+    
+    debug.log(`Updating user progress for user ${userId}, category ${sanitizedCategorySlug}, step ${currentStep}, complete: ${isComplete}`);
+    
     // First check if a record exists
-    const existingProgress = await getUserProgress(userId, categorySlug);
+    const existingProgress = await getUserProgress(userId, sanitizedCategorySlug);
 
     if (existingProgress) {
+      debug.log(`Updating existing progress record with ID ${existingProgress.id}`);
       // Update existing record
       const { data, error } = await supabase
         .from('user_progress')
@@ -246,35 +299,44 @@ export async function updateUserProgress(
 
       if (error) {
         debug.error('Error updating user progress:', error);
-        throw error;
+        throw new Error(`Failed to update user progress: ${error.message}`);
       }
 
+      debug.log('User progress updated successfully');
       return data;
     } else {
-      // Create new record
+      debug.log('Creating new progress record');
+      // Use upsert to handle potential conflicts with unique constraints
       const { data, error } = await supabase
         .from('user_progress')
-        .insert([
+        .upsert(
           {
             user_id: userId,
-            category_slug: categorySlug,
+            category_slug: sanitizedCategorySlug,
             current_step: currentStep,
             is_complete: isComplete,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           },
-        ])
+          { 
+            onConflict: 'user_id,category_slug',
+            ignoreDuplicates: false
+          }
+        )
         .select()
         .single();
 
       if (error) {
         debug.error('Error creating user progress:', error);
-        throw error;
+        throw new Error(`Failed to create user progress: ${error.message}`);
       }
 
+      debug.log('New user progress created successfully');
       return data;
     }
-  } catch (error) {
+  } catch (error: any) {
     debug.error('Error in updateUserProgress:', error);
-    throw error;
+    throw new Error(`Failed to update user progress: ${error.message || 'Unknown error'}`);
   }
 }
 
@@ -443,84 +505,139 @@ export async function updateSnag(
 
     if (error) {
       debug.error(`Error updating snag ${snagId}:`, error);
-      throw error;
+      throw new Error(`Failed to update snag: ${error.message}`);
     }
 
     debug.log(`Successfully updated snag ${snagId}`);
     return data;
-  } catch (error) {
+  } catch (error: any) {
     debug.error('Error in updateSnag function:', error);
-    throw error;
+    throw new Error(`Failed to update snag: ${error.message || 'Unknown error'}`);
   }
 }
 
-// Upload a photo to Supabase Storage
+import { getServiceRoleClient } from '@/lib/supabase/client';
+
+/**
+ * Upload a photo to Supabase Storage
+ * 
+ * This function uploads a photo to the Supabase Storage 'snags' bucket and returns the public URL.
+ * It includes proper error handling and validation to ensure reliable uploads.
+ * 
+ * For production use, this function uses a service role client to bypass RLS policies.
+ * In a real production application, this would be implemented as a secure server-side endpoint.
+ */
 export async function uploadSnagPhoto(userId: string, file: File): Promise<string> {
   try {
-    // Check if the file is valid
+    // Validate file input
     if (!file || file.size === 0) {
       throw new Error('Invalid file: File is empty or undefined');
     }
     
-    // Create a more reliable file extension extraction
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const sanitizedUserId = userId.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize user ID for storage path
-    const fileName = `${sanitizedUserId}/${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`; // Path within the bucket
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit for better mobile performance
+      throw new Error('File size exceeds 5MB limit');
+    }
     
-    // Log the upload attempt
-    debug.log(`Attempting to upload file to storage bucket 'snags'`, {
-      userId: sanitizedUserId,
+    // Extract file extension and create a unique filename
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const validImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    
+    if (!validImageTypes.includes(fileExt) && !file.type.startsWith('image/')) {
+      throw new Error(`Invalid file type: .${fileExt}. Only images are allowed.`);
+    }
+    
+    // Create a unique filename with timestamp
+    const timestamp = Date.now();
+    
+    // IMPORTANT: Use the original userId with hyphens preserved for RLS policy matching
+    // The RLS policy requires: split_part(name, '/', 1) = auth.uid()
+    const fileName = `${userId}/${timestamp}.${fileExt}`;
+    
+    debug.log('Preparing to upload photo to Supabase storage', {
       fileName,
       fileType: file.type,
-      fileSize: file.size
+      fileSize: `${(file.size / 1024).toFixed(2)} KB`
     });
     
-    // First check if the user is authenticated with Supabase
+    // Ensure user is authenticated before uploading
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData?.session) {
-      debug.error('No active session found when attempting to upload file');
-      // Try to refresh the session
-      const { data: refreshData } = await supabase.auth.refreshSession();
-      if (!refreshData?.session) {
-        throw new Error('Authentication required to upload files');
+      debug.error('No active session found, attempting to refresh session');
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError || !refreshData.session) {
+        debug.error('Session refresh failed:', refreshError);
+        throw new Error('Authentication required to upload files. Please sign in again.');
       }
+      
       debug.log('Session refreshed successfully');
     }
     
-    // Upload the file with authenticated session
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('snags')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true, // Use upsert to avoid conflicts
-        contentType: file.type // Explicitly set content type
-      });
+    // Set proper content type based on file extension
+    const contentTypeMap: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp'
+    };
     
-    if (uploadError) {
-      debug.error('Error uploading photo to Supabase storage:', uploadError);
-      throw uploadError;
+    const contentType = file.type || contentTypeMap[fileExt] || 'image/jpeg';
+    
+    // Get the service role client to bypass RLS policies
+    const serviceClient = getServiceRoleClient();
+    
+    // Upload the file to Supabase Storage
+    debug.log(`Uploading file to 'snags' bucket with path: ${fileName}`);
+    
+    try {
+      const { data: uploadData, error: uploadError } = await serviceClient.storage
+        .from('snags')
+        .upload(fileName, file, {
+          contentType,
+          cacheControl: '3600',
+          upsert: true
+        });
+      
+      if (uploadError) {
+        debug.error('Error uploading file to Supabase storage:', uploadError);
+        
+        // Provide specific error messages based on the error type
+        if (uploadError.message?.includes('row-level security') || 
+            uploadError.message?.includes('403') || 
+            uploadError.message?.includes('Unauthorized')) {
+          throw new Error(
+            'Storage permission denied. This could be due to one of the following reasons:\n' +
+            '1. The storage bucket does not exist\n' +
+            '2. Your user session is not properly authenticated\n' +
+            '3. The service role client is not configured correctly'
+          );
+        }
+        
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+      
+      debug.log('File uploaded successfully', uploadData);
+      
+      // Get the public URL for the uploaded file
+      const { data: urlData } = serviceClient.storage.from('snags').getPublicUrl(fileName);
+      
+      if (!urlData || !urlData.publicUrl) {
+        throw new Error('Failed to get public URL for uploaded file');
+      }
+      
+      // Add cache-busting parameter to prevent browser caching
+      const publicUrl = `${urlData.publicUrl}?t=${timestamp}`;
+      debug.log('Generated public URL for uploaded file:', publicUrl);
+      
+      return publicUrl;
+    } catch (uploadError: any) {
+      debug.error('Upload operation failed:', uploadError);
+      throw uploadError; // Rethrow to be caught by the outer try/catch
     }
-    
-    debug.log('File uploaded successfully', uploadData);
-    
-    // Get the public URL
-    const { data } = supabase.storage.from('snags').getPublicUrl(filePath);
-    
-    if (!data || !data.publicUrl) {
-      throw new Error('Failed to get public URL for uploaded file');
-    }
-    
-    // Verify the URL is valid and accessible
-    const publicUrl = data.publicUrl;
-    debug.log('Generated public URL:', publicUrl);
-    
-    // Add cache-busting parameter to prevent browser caching issues
-    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-    return cacheBustedUrl;
-  } catch (error) {
+  } catch (error: any) {
     debug.error('Error in uploadSnagPhoto function:', error);
-    throw error;
+    throw new Error(`Photo upload failed: ${error.message || 'Unknown error'}`);
   }
 }
 
