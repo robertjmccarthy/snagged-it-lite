@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShare } from '@/contexts/ShareContext';
-import { Layout, Section } from '@/components';
+import { Layout } from '@/components';
 import { debug } from '@/lib/debug';
 import { updateShareStatus } from '@/lib/api/share';
 
-export default function SuccessPage() {
+// Component that uses searchParams (needs to be wrapped in Suspense)
+function SuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -70,6 +71,38 @@ export default function SuccessPage() {
   }
 
   return (
+    <div className="flex flex-1 flex-col p-6 animate-fade-in">
+      <div className="container mx-auto max-w-4xl">
+        <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+          <header className="text-left mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">Thank you for your payment</h1>
+          </header>
+          
+          <div className="space-y-6 mb-10">
+            <p className="text-gray-dark text-lg mb-6">
+              Your snag list has been sent to your builder. They will be able to view all the snags you recorded so they can get on with sorting them.
+            </p>
+            
+            <div className="flex">
+              <Link href="/dashboard">
+                <button
+                  className="menu-item bg-primary hover:bg-primary-hover"
+                  aria-label="View your snag list"
+                >
+                  View your snag list
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function SuccessPage() {
+  return (
     <Layout>
       <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
       <style jsx global>{`
@@ -78,32 +111,13 @@ export default function SuccessPage() {
         }
       `}</style>
       
-      <div className="flex flex-1 flex-col p-6 animate-fade-in">
-        <div className="container mx-auto max-w-4xl">
-          <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
-            <header className="text-left mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold mb-3">Thank you for your payment</h1>
-            </header>
-            
-            <div className="space-y-6 mb-10">
-              <p className="text-gray-dark text-lg mb-6">
-                Your snag list has been sent to your builder. They will be able to view all the snags you recorded so they can get on with sorting them.
-              </p>
-              
-              <div className="flex">
-                <Link href="/dashboard">
-                  <button
-                    className="menu-item bg-primary hover:bg-primary-hover"
-                    aria-label="View your snag list"
-                  >
-                    View your snag list
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
+      <Suspense fallback={
+        <div className="flex flex-1 items-center justify-center p-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </div>
+      }>
+        <SuccessPageContent />
+      </Suspense>
     </Layout>
   );
 }
