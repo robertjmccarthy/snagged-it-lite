@@ -354,9 +354,10 @@ export default function NewSnagPage({ params }: SnagEntryPageProps) {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handlePhotoChange}
-                  ref={fileInputRef}
+                  capture="environment"
                   className="hidden"
+                  ref={fileInputRef}
+                  onChange={handlePhotoChange}
                 />
                 
                 {photoPreview ? (
