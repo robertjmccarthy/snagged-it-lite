@@ -11,6 +11,7 @@ import { debug } from '@/lib/debug';
 import { Layout, Section, Card, Button } from '@/components';
 import ResetProgress from '@/components/ResetProgress';
 import { supabase } from '@/lib/supabase/client';
+import PdfDownloadButton from '@/components/PdfDownloadButton';
 
 // Component to handle the actual dashboard logic
 function DashboardContent() {
@@ -363,83 +364,62 @@ function DashboardContent() {
                   <>
                     {/* Details Box */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                      <h2 className="text-xl font-semibold mb-2">Details</h2>
-                      <div className="space-y-3 mt-4">
+                      <h2 className="text-xl font-semibold mb-4">Details</h2>
+                      <div className="space-y-4">
+                        {/* Home Address */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500">Home address</h3>
-                            <p className="mt-1 text-base text-gray-900 whitespace-pre-line">{latestShare.address}</p>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Home address</h3>
+                            <p className="text-base text-gray-900 whitespace-pre-line">{latestShare.address}</p>
                           </div>
                         </div>
                         
+                        {/* Builder */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500">Builder</h3>
-                            <p className="mt-1 text-base text-gray-900">{latestShare.builder_name}</p>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Builder</h3>
+                            <p className="text-base text-gray-900">{latestShare.builder_name}</p>
                           </div>
                         </div>
                         
+                        {/* Builder Email */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500">Builder email</h3>
-                            <p className="mt-1 text-base text-gray-900">{latestShare.builder_email}</p>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Builder email</h3>
+                            <p className="text-base text-gray-900">{latestShare.builder_email}</p>
                           </div>
                         </div>
                         
+                        {/* Shared On */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500">Shared on</h3>
-                            <p className="mt-1 text-base text-gray-900">{new Date(latestShare.updated_at).toLocaleDateString()}</p>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Shared on</h3>
+                            <p className="text-base text-gray-900">{new Date(latestShare.updated_at).toLocaleDateString()}</p>
                           </div>
                         </div>
                         
+                        {/* Snags Count */}
                         <div className="flex justify-between items-start pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500">Snags</h3>
-                            <p className="mt-1 text-base text-gray-900">{outsideSnagCount + insideSnagCount} snags recorded</p>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Snags</h3>
+                            <p className="text-base text-gray-900">{outsideSnagCount + insideSnagCount} snags recorded</p>
                           </div>
                         </div>
+                        
+                        {/* Download PDF Button */}
+                        {userSnags.length > 0 && (
+                          <div className="flex pt-3 border-t border-gray-200">
+                            <PdfDownloadButton 
+                              snags={userSnags} 
+                              shareDetails={latestShare}
+                              className="menu-item"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     
-                    {/* Recorded Snags Box */}
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-6">
-                      <h2 className="text-xl font-semibold mb-4">Your recorded snags</h2>
-                      {isLoadingSnags ? (
-                        <div className="flex justify-center py-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                        </div>
-                      ) : userSnags.length > 0 ? (
-                        <div className="space-y-4">
-                          {userSnags.map((snag) => (
-                            <div key={snag.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                              <div className="flex justify-between items-start mb-2">
-                                <h4 className="text-base font-medium">{snag.checklist_item?.friendly_text || 'Snag'}</h4>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(snag.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              
-                              {snag.note && (
-                                <p className="text-sm text-gray-700 mb-2">{snag.note}</p>
-                              )}
-                              
-                              {snag.photo_url && (
-                                <div className="mt-2 relative h-40 w-full">
-                                  <img 
-                                    src={snag.photo_url} 
-                                    alt="Snag photo" 
-                                    className="rounded-md object-cover h-full w-full"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 italic">No snags found</p>
-                      )}
-                    </div>
+                    {/* Start New Snag List Box moved up to replace the removed Recorded Snags Box */}
                     
                     {/* Start New Snag List Box */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-6">

@@ -115,6 +115,7 @@ export default function InsideCheckStep({ params }: StepPageProps) {
   }, [user, loading, router, stepIndex, isValidStep]);
 
   const handleContinue = async () => {
+    // Prevent multiple clicks or actions when not logged in
     if (!user || isNavigating) return;
     
     setIsNavigating(true);
@@ -127,36 +128,32 @@ export default function InsideCheckStep({ params }: StepPageProps) {
       const isLastStep = stepIndex === totalSteps || stepIndex === MAX_STEPS;
       
       // Update progress in Supabase
-      try {
-        if (isLastStep) {
-          // If this is the last step, mark the entire section as complete
-          debug.log('This is the last step, marking inside checks as complete');
-          await updateUserProgress(user.id, 'inside', stepIndex, true);
-        } else {
-          // Otherwise, update progress to the next step
-          debug.log(`Moving to next step: ${stepIndex + 1}`);
-          await updateUserProgress(user.id, 'inside', stepIndex + 1, false);
-        }
+      if (isLastStep) {
+        // If this is the last step, mark the entire section as complete
+        debug.log('This is the last step, marking inside checks as complete');
+        await updateUserProgress(user.id, 'inside', stepIndex, true);
         
-        // Navigate after successful progress update
-        if (isLastStep) {
-          // Redirect to dashboard
-          debug.log('Redirecting to dashboard');
-          router.push('/dashboard');
-        } else {
-          // Redirect to the next step
-          debug.log(`Navigating to step ${stepIndex + 1}`);
-          router.push(`/checks/inside/${stepIndex + 1}`);
-        }
-      } catch (progressError) {
-        // Log the error and show a user-friendly message
-        debug.error('Error updating progress:', progressError);
-        alert('There was an issue saving your progress. Please try again.');
-        setIsNavigating(false);
-        setIsLoading(false);
+        // Redirect to dashboard after completing all checks
+        debug.log('Redirecting to dashboard');
+        router.push('/dashboard');
+      } else {
+        // Otherwise, update progress to the next step
+        debug.log(`Moving to next step: ${stepIndex + 1}`);
+        await updateUserProgress(user.id, 'inside', stepIndex + 1, false);
+        
+        // Redirect to the next step
+        const nextStep = stepIndex + 1;
+        debug.log(`Navigating to step ${nextStep}`);
+        
+        // Use replace instead of push to avoid navigation history issues
+        router.push(`/checks/inside/${nextStep}`);
       }
     } catch (error) {
+      // Log the error and show a user-friendly message
       debug.error('Error in continue handler:', error);
+      alert('There was an issue saving your progress. Please try again.');
+      
+      // Reset navigation state to allow retrying
       setIsNavigating(false);
       setIsLoading(false);
     }
