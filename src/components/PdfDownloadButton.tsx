@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { format } from 'date-fns';
+import PdfViewer from './PdfViewer';
 
 // Import html2pdf dynamically to avoid SSR issues
 let html2pdf: any = null;
@@ -31,6 +32,9 @@ interface PdfDownloadButtonProps {
 
 export default function PdfDownloadButton({ snags, shareDetails, className = '' }: PdfDownloadButtonProps) {
   const pdfContentRef = useRef<HTMLDivElement>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfFilename, setPdfFilename] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -229,7 +233,23 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      await html2pdf().from(tempDiv).set(options).save();
+      // For mobile, we'll create a blob URL instead of immediately downloading
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Generate PDF as blob
+        const pdfBlob = await html2pdf().from(tempDiv).set(options).outputPdf('blob');
+        
+        // Create a blob URL
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        
+        // Set the PDF URL and filename for the viewer
+        setPdfUrl(blobUrl);
+        setPdfFilename(filename);
+      } else {
+        // On desktop, use the traditional download approach
+        await html2pdf().from(tempDiv).set(options).save();
+      }
       
       // Remove the temp div
       document.body.removeChild(tempDiv);
@@ -240,13 +260,36 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
     }
   }, [snags, shareDetails]);
 
+  // Close the PDF viewer
+  const handleClosePdfViewer = useCallback(() => {
+    if (pdfUrl) {
+      // Clean up the blob URL
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+  }, [pdfUrl]);
+
   return (
-    <button
-      onClick={handleDownload}
-      className={`menu-item bg-primary hover:bg-primary-hover ${className}`}
-      aria-label="Download snag list as PDF"
-    >
-      Download snag list (PDF)
-    </button>
+    <>
+      <button
+        onClick={() => {
+          setIsLoading(true);
+          handleDownload().finally(() => setIsLoading(false));
+        }}
+        className={`menu-item bg-primary hover:bg-primary-hover ${className} ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
+        aria-label="Download snag list as PDF"
+        disabled={isLoading}
+      >
+        {isLoading ? 'Generating PDF...' : 'Download snag list (PDF)'}
+      </button>
+      
+      {pdfUrl && (
+        <PdfViewer 
+          pdfUrl={pdfUrl} 
+          onClose={handleClosePdfViewer} 
+          filename={pdfFilename} 
+        />
+      )}
+    </>
   );
 }
