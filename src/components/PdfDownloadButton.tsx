@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
-import PdfViewer from './PdfViewer';
 
 // Import html2pdf dynamically to avoid SSR issues
 let html2pdf: any = null;
@@ -32,9 +31,9 @@ interface PdfDownloadButtonProps {
 
 export default function PdfDownloadButton({ snags, shareDetails, className = '' }: PdfDownloadButtonProps) {
   const pdfContentRef = useRef<HTMLDivElement>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [pdfFilename, setPdfFilename] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  // Keep track of created blob URLs to clean them up later
+  const blobUrlRef = useRef<string | null>(null);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -233,23 +232,20 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      // For mobile, we'll create a blob URL instead of immediately downloading
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      // Generate PDF as blob for all devices
+      const pdfBlob = await html2pdf().from(tempDiv).set(options).outputPdf('blob');
       
-      if (isMobile) {
-        // Generate PDF as blob
-        const pdfBlob = await html2pdf().from(tempDiv).set(options).outputPdf('blob');
-        
-        // Create a blob URL
-        const blobUrl = URL.createObjectURL(pdfBlob);
-        
-        // Set the PDF URL and filename for the viewer
-        setPdfUrl(blobUrl);
-        setPdfFilename(filename);
-      } else {
-        // On desktop, use the traditional download approach
-        await html2pdf().from(tempDiv).set(options).save();
+      // Create a blob URL
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      
+      // Store the blob URL for cleanup later
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
+      blobUrlRef.current = blobUrl;
+      
+      // Open the PDF in a new tab
+      window.open(blobUrl, '_blank');
       
       // Remove the temp div
       document.body.removeChild(tempDiv);
@@ -260,36 +256,27 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
     }
   }, [snags, shareDetails]);
 
-  // Close the PDF viewer
-  const handleClosePdfViewer = useCallback(() => {
-    if (pdfUrl) {
-      // Clean up the blob URL
-      URL.revokeObjectURL(pdfUrl);
-      setPdfUrl(null);
-    }
-  }, [pdfUrl]);
+  // Clean up any blob URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+  }, []);
 
   return (
-    <>
-      <button
-        onClick={() => {
-          setIsLoading(true);
-          handleDownload().finally(() => setIsLoading(false));
-        }}
-        className={`menu-item bg-primary hover:bg-primary-hover ${className} ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
-        aria-label="Download snag list as PDF"
-        disabled={isLoading}
-      >
-        {isLoading ? 'Generating PDF...' : 'Download snag list (PDF)'}
-      </button>
-      
-      {pdfUrl && (
-        <PdfViewer 
-          pdfUrl={pdfUrl} 
-          onClose={handleClosePdfViewer} 
-          filename={pdfFilename} 
-        />
-      )}
-    </>
+    <button
+      onClick={() => {
+        setIsLoading(true);
+        handleDownload().finally(() => setIsLoading(false));
+      }}
+      className={`menu-item bg-primary hover:bg-primary-hover ${className} ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
+      aria-label="View snag list as PDF"
+      disabled={isLoading}
+    >
+      {isLoading ? 'Generating PDF...' : 'View snag list (PDF)'}
+    </button>
   );
 }
