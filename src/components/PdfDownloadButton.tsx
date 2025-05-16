@@ -171,9 +171,14 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
       const snagsContainer = document.createElement('div');
       snagsContainer.style.marginBottom = '30px';
       
-      // Process each snag
-      for (let index = 0; index < snags.length; index++) {
-        const snag = snags[index];
+      // Sort snags by creation date (oldest first)
+      const sortedSnags = [...snags].sort((a, b) => {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+      
+      // Process each snag in chronological order
+      for (let index = 0; index < sortedSnags.length; index++) {
+        const snag = sortedSnags[index];
         
         // Create a box for each snag
         const snagBox = document.createElement('div');
