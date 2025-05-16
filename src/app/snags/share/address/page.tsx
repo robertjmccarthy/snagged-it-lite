@@ -152,18 +152,19 @@ export default function AddressPage() {
           </div>
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
-            <header className="mb-8">
-              <div className="mb-4">
-                <p className="text-gray-dark text-sm mb-2">
-                  Share your snag list
-                </p>
-                <h1 className="text-2xl md:text-3xl font-bold">
+            <header className="mb-4">
+              <div className="mb-0">
+
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
                   Your new home address
                 </h1>
+                <p className="text-base text-gray-600 mb-1">
+                  Enter the address of the home you're snagging. It will be added to your snag list.
+                </p>
               </div>
             </header>
             
-            <div className="mb-8">
+            <div className="mb-2">
               <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
                 {/* Address fieldset with proper grouping */}
                 <fieldset className="space-y-4">

@@ -346,9 +346,9 @@ function DashboardContent() {
           <header className="text-left mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
               {latestShare && (outsideSnagCount > 0 || insideSnagCount > 0)
-                ? "Your snag list has been shared" 
+                ? "Your snag list" 
                 : showCompletionBox() 
-                  ? "You're all done 🎉" 
+                  ? "You're done snagging 🎉" 
                   : "Hello homeowner 👋"
               }
             </h1>
@@ -382,18 +382,12 @@ function DashboardContent() {
                           </div>
                         </div>
                         
-                        {/* Builder Email */}
-                        <div className="flex justify-between items-start border-b border-gray-200 pb-3">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-0">Builder email</h3>
-                            <p className="text-base text-gray-900">{latestShare.builder_email}</p>
-                          </div>
-                        </div>
+                        {/* Builder Email section removed */}
                         
                         {/* Shared On */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-0">Shared on</h3>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Complete on</h3>
                             <p className="text-base text-gray-900">{new Date(latestShare.updated_at).toLocaleDateString()}</p>
                           </div>
                         </div>
@@ -402,7 +396,7 @@ function DashboardContent() {
                         <div className="flex justify-between items-start pb-3">
                           <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-0">Snags</h3>
-                            <p className="text-base text-gray-900">{outsideSnagCount + insideSnagCount} snags recorded</p>
+                            <p className="text-base text-gray-900">{outsideSnagCount + insideSnagCount === 1 ? "1 snag recorded" : `${outsideSnagCount + insideSnagCount} snags recorded`}</p>
                           </div>
                         </div>
                         
@@ -435,17 +429,38 @@ function DashboardContent() {
                 ) : outsideSnagCount + insideSnagCount > 0 ? (
                   /* Content for users with snags but not shared yet */
                   <>
+                    {/* Snag count box - styled like industry standards section */}
+                    <div className="bg-dark-green text-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                      <div className="py-8 px-6">
+                        <div className="flex items-center justify-start">
+                          <div className="bg-primary rounded-full p-2 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#333333" className="w-5 h-5" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+                            </svg>
+                          </div>
+                          <h2 className="text-xl md:text-2xl font-bold leading-tight my-auto">
+                            {outsideSnagCount + insideSnagCount === 1 
+                              ? "There is 1 snag on your list" 
+                              : `There are ${outsideSnagCount + insideSnagCount} snags on your list`
+                            }
+                          </h2>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Next steps box */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                       <div className="mb-4">
-                        <h2 className="text-xl font-semibold mb-2">
-                          {outsideSnagCount + insideSnagCount === 1 
-                            ? "There is 1 snag on your list" 
-                            : `There are ${outsideSnagCount + insideSnagCount} snags on your list`
-                          }
-                        </h2>
+                        <h3 className="text-lg font-semibold mb-2">Next steps</h3>
                         <p className="text-gray-dark mb-4">
-                          Share your list with your builder so they can get onto sorting the snags, and you can enjoy your new home.
+                          You're just a few steps away from having an industry aligned snag list to share with your builder.
                         </p>
+                        <ul className="list-disc pl-5 mb-4 text-gray-dark space-y-1">
+                          <li>Enter your details</li>
+                          <li>Enter your builder's details</li>
+                          <li>Pay £19.99 and download your snag list</li>
+                          <li>Send your snag list to your builder</li>
+                        </ul>
                       </div>
                       
                       <div className="mb-6"></div>
@@ -456,7 +471,7 @@ function DashboardContent() {
                             className="menu-item bg-primary hover:bg-primary-hover"
                             aria-label="Share your snag list with your builder"
                           >
-                            Share your snag list
+                            Download your snag list
                           </button>
                         </Link>
                       </div>

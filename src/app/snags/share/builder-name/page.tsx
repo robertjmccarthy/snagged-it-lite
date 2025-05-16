@@ -24,7 +24,7 @@ export default function BuilderNamePage() {
     
     // Redirect if user didn't select "other" in the previous step
     if (shareData.builderType && shareData.builderType !== 'other') {
-      router.replace('/snags/share/builder-email');
+      router.replace('/snags/share/confirm');
     }
   }, [shareData.builderName, shareData.builderType, router]);
 
@@ -52,7 +52,7 @@ export default function BuilderNamePage() {
       updateShareData({ builderName: builderName.trim() });
       
       // We'll determine navigation in the ClientOnly component
-      router.push('/snags/share/builder-email');
+      router.push('/snags/share/confirm');
     } catch (error) {
       debug.error('Error saving builder name:', error);
       setError('An error occurred. Please try again.');
@@ -99,18 +99,19 @@ export default function BuilderNamePage() {
           </div>
           
           <div className="bg-white shadow-sm rounded-xl p-6 md:p-8 border border-gray-100">
-            <header className="mb-8">
-              <div className="mb-4">
-                <p className="text-gray-dark text-sm mb-2">
-                  Share your snag list
-                </p>
-                <h1 className="text-2xl md:text-3xl font-bold">
+            <header className="mb-4">
+              <div className="mb-0">
+
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
                   Your builder's name
                 </h1>
+                <p className="text-base text-gray-600 mb-1">
+                  Enter the company name of your builder. It will be added to your snag list.
+                </p>
               </div>
             </header>
             
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="mb-6">
                 <input
                   type="text"

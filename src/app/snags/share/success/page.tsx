@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShare } from '@/contexts/ShareContext';
-import { Layout } from '@/components';
+import Layout from '@/components/Layout';
+import Section from '@/components/Section';
 import { debug } from '@/lib/debug';
 import { updateShareStatus, getShareById } from '@/lib/api/share';
 import { supabase } from '@/lib/supabase/client';
@@ -94,10 +95,10 @@ function SuccessPageContent() {
   if (loading || !user) {
     return (
       <Layout>
-        <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
+        <div className="fixed inset-0 bg-dark-green -z-10"></div>
         <style jsx global>{`
           body {
-            background-color: #BBF2D7;
+            background-color: #0A4D2E;
           }
         `}</style>
         <div className="flex justify-center items-center py-12">
@@ -108,32 +109,27 @@ function SuccessPageContent() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-6 animate-fade-in">
+    <Section background="dark-green">
       <div className="container mx-auto max-w-4xl">
-        <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
-          <header className="text-left mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Thank you for your payment</h1>
-          </header>
+        <div className="flex flex-col items-center text-center py-12 px-6">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+            Thank you for your payment
+          </h1>
+          <p className="text-xl text-white mb-8">
+            Your snag list is ready to view, download, and share with your builder
+          </p>
           
-          <div className="space-y-6 mb-10">
-            <p className="text-gray-dark text-lg mb-6">
-              Your snag list has been sent to your builder. They will be able to view all the snags you recorded so they can get on with sorting them.
-            </p>
-            
-            <div className="flex">
-              <Link href="/dashboard">
-                <button
-                  className="menu-item bg-primary hover:bg-primary-hover"
-                  aria-label="View your snag list"
-                >
-                  View your snag list
-                </button>
-              </Link>
-            </div>
-          </div>
+          <Link href="/dashboard">
+            <button
+              className="btn btn-primary text-lg py-3 px-6"
+              aria-label="Continue to view your snag list"
+            >
+              Continue to view your snag list
+            </button>
+          </Link>
         </div>
       </div>
-    </div>
+    </Section>
   );
 }
 
@@ -141,10 +137,10 @@ function SuccessPageContent() {
 export default function SuccessPage() {
   return (
     <Layout>
-      <div className="fixed inset-0 bg-[#BBF2D7] -z-10"></div>
+      <div className="fixed inset-0 bg-dark-green -z-10"></div>
       <style jsx global>{`
         body {
-          background-color: #BBF2D7;
+          background-color: #0A4D2E;
         }
       `}</style>
       

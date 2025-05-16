@@ -27,9 +27,9 @@ export default function ConfirmPage() {
       }
       
       // Check if all required data is present
-      const { fullName, address, builderType, builderEmail } = shareData;
+      const { fullName, address, builderType } = shareData;
       
-      if (!fullName || !address || !builderType || !builderEmail) {
+      if (!fullName || !address || !builderType) {
         debug.error('Share Confirm Page: Missing required data, redirecting to first step');
         router.replace('/snags/share/name');
       }
@@ -93,7 +93,7 @@ export default function ConfirmPage() {
   return (
     <ShareLayout 
       title="Confirm your details" 
-      subtitle="Check the information below before proceeding to pay."
+      subtitle="Check the information below before paying and downloading your snag list."
     >
       <div className="space-y-8">
         {/* Information summary */}
@@ -143,28 +143,15 @@ export default function ConfirmPage() {
             </Link>
           </div>
           
-          {/* Builder Email */}
-          <div className="flex justify-between items-start border-b border-gray-200 pb-3">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-0">Builder email</h3>
-              <p className="text-base text-gray-900">{shareData.builderEmail}</p>
-            </div>
-            <Link 
-              href="/snags/share/builder-email?returnToConfirm=true" 
-              className="text-sm text-primary hover:text-primary-hover"
-              aria-label="Change builder email"
-            >
-              Change
-            </Link>
-          </div>
+          {/* No Builder Email section */}
         </div>
         
         {/* Payment banner */}
         <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm mt-8">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-2">Share your snag list for £19.99</h2>
+            <h2 className="text-xl font-semibold mb-2">Pay £19.99 and download your snag list</h2>
             <p className="text-gray-dark mb-2">
-              Your builder will receive your snag list straight to their inbox so they can get onto sorting the snags with your new home.
+              Download your industry aligned snag list to share with your builder. Sit back and relax as they sort your snags.
             </p>
           </div>
           
