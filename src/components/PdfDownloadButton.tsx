@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
+import { getServiceRoleClient } from '@/lib/supabase/client';
 
 // Import html2pdf dynamically to avoid SSR issues
 let html2pdf: any = null;
 
 interface Snag {
   id: string;
+  user_id?: string;
   checklist_item?: {
     friendly_text: string;
   };
@@ -46,6 +48,106 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
       // Format the filename with the date
       const dateStr = format(new Date(), 'yyyy-MM-dd');
       const filename = `snag-list-${dateStr}.pdf`;
+      
+      // For PDF generation, we'll fetch the actual image data from Supabase storage
+      // and convert it to data URLs to avoid CORS issues
+      console.log('Original snag photo URLs:', snags.map(s => s.photo_url));
+      
+      // Get the service role client for authenticated storage access
+      const serviceClient = getServiceRoleClient();
+      
+      // Helper function to extract the storage path from a URL
+      const extractStoragePath = (url: string): string | null => {
+        try {
+          // Remove any query parameters
+          const cleanUrl = url.includes('?') ? url.split('?')[0] : url;
+          
+          // Check if this is a Supabase URL
+          if (cleanUrl.includes('storage/v1/object/public/snags/')) {
+            // Extract the path after 'snags/'
+            const match = cleanUrl.match(/\/snags\/(.+)$/);
+            if (match && match[1]) {
+              return match[1]; // Return the path after 'snags/'
+            }
+          } 
+          // If it's not a full URL, it might be just the path
+          else if (!cleanUrl.startsWith('http')) {
+            return cleanUrl.startsWith('/') ? cleanUrl.substring(1) : cleanUrl;
+          }
+          
+          return null;
+        } catch (error) {
+          console.error('Error extracting storage path:', error);
+          return null;
+        }
+      };
+      
+      // Helper function to fetch an image from Supabase storage and convert to data URL
+      const fetchImageAsDataUrl = async (url: string): Promise<string> => {
+        try {
+          // First try to extract the storage path
+          const storagePath = extractStoragePath(url);
+          
+          if (!storagePath) {
+            console.error('Could not extract storage path from URL:', url);
+            // Return a placeholder image
+            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNNzQuMjUgODYuNUg2My43NUw4Ni43NSAxMjMuNzVIMTEzLjI1TDEzNi4yNSA4Ni41SDEyNS43NUwxMDAgMTEzLjc1TDc0LjI1IDg2LjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTEzNi4yNSAxMzYuMjVIODYuNzVWMTIzLjc1SDEzNi4yNVYxMzYuMjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYzLjc1IDEzNi4yNUg1MFYxMjMuNzVINjMuNzVWMTM2LjI1WiIgZmlsbD0iIzk0QTNCMyIvPjxwYXRoIGQ9Ik0xNTAgMTM2LjI1SDEzNi4yNVYxMjMuNzVIMTUwVjEzNi4yNVoiIGZpbGw9IiM5NEEzQjMiLz48L3N2Zz4=';
+          }
+          
+          console.log('Fetching image data from storage path:', storagePath);
+          
+          // Download the file directly from Supabase storage
+          const { data, error } = await serviceClient.storage
+            .from('snags')
+            .download(storagePath);
+          
+          if (error || !data) {
+            console.error('Error downloading image from storage:', error);
+            // Return a placeholder image
+            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNNzQuMjUgODYuNUg2My43NUw4Ni43NSAxMjMuNzVIMTEzLjI1TDEzNi4yNSA4Ni41SDEyNS43NUwxMDAgMTEzLjc1TDc0LjI1IDg2LjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTEzNi4yNSAxMzYuMjVIODYuNzVWMTIzLjc1SDEzNi4yNVYxMzYuMjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYzLjc1IDEzNi4yNUg1MFYxMjMuNzVINjMuNzVWMTM2LjI1WiIgZmlsbD0iIzk0QTNCMyIvPjxwYXRoIGQ9Ik0xNTAgMTM2LjI1SDEzNi4yNVYxMjMuNzVIMTUwVjEzNi4yNVoiIGZpbGw9IiM5NEEzQjMiLz48L3N2Zz4=';
+          }
+          
+          console.log('Successfully downloaded image data');
+          
+          // Convert the blob to a data URL
+          return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(data);
+          });
+        } catch (error) {
+          console.error('Error fetching image as data URL:', error);
+          // Return a placeholder image if there's an error
+          return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNNzQuMjUgODYuNUg2My43NUw4Ni43NSAxMjMuNzVIMTEzLjI1TDEzNi4yNSA4Ni41SDEyNS43NUwxMDAgMTEzLjc1TDc0LjI1IDg2LjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTEzNi4yNSAxMzYuMjVIODYuNzVWMTIzLjc1SDEzNi4yNVYxMzYuMjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYzLjc1IDEzNi4yNUg1MFYxMjMuNzVINjMuNzVWMTM2LjI1WiIgZmlsbD0iIzk0QTNCMyIvPjxwYXRoIGQ9Ik0xNTAgMTM2LjI1SDEzNi4yNVYxMjMuNzVIMTUwVjEzNi4yNVoiIGZpbGw9IiM5NEEzQjMiLz48L3N2Zz4=';
+        }
+      };
+      
+      // Process each snag and convert its photo URL to a data URL
+      const processedSnags = await Promise.all(snags.map(async (snag) => {
+        if (snag.photo_url) {
+          try {
+            console.log('Fetching image data for:', snag.photo_url);
+            
+            // Fetch the image data and convert to data URL
+            const dataUrl = await fetchImageAsDataUrl(snag.photo_url);
+            console.log('Successfully converted image to data URL');
+            
+            // Return the snag with the data URL
+            return { ...snag, photo_url: dataUrl };
+          } catch (error) {
+            console.error('Error processing photo URL:', error, snag.photo_url);
+            // Return the snag with a placeholder image
+            return { 
+              ...snag, 
+              photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNNzQuMjUgODYuNUg2My43NUw4Ni43NSAxMjMuNzVIMTEzLjI1TDEzNi4yNSA4Ni41SDEyNS43NUwxMDAgMTEzLjc1TDc0LjI1IDg2LjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTEzNi4yNSAxMzYuMjVIODYuNzVWMTIzLjc1SDEzNi4yNVYxMzYuMjVaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYzLjc1IDEzNi4yNUg1MFYxMjMuNzVINjMuNzVWMTM2LjI1WiIgZmlsbD0iIzk0QTNCMyIvPjxwYXRoIGQ9Ik0xNTAgMTM2LjI1SDEzNi4yNVYxMjMuNzVIMTUwVjEzNi4yNVoiIGZpbGw9IiM5NEEzQjMiLz48L3N2Zz4=' 
+            };
+          }
+        }
+        return snag;
+      }));
+      
+      console.log('Processed snags with data URLs for photos');
       
       // Create a temporary div for PDF content
       const tempDiv = document.createElement('div');
@@ -171,8 +273,8 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
       const snagsContainer = document.createElement('div');
       snagsContainer.style.marginBottom = '30px';
       
-      // Sort snags by creation date (oldest first)
-      const sortedSnags = [...snags].sort((a, b) => {
+      // Sort processedSnags chronologically (first recorded snag first)
+      const sortedSnags = [...processedSnags].sort((a, b) => {
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
       
@@ -241,8 +343,9 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
           imgContainer.style.textAlign = 'center';
           imgContainer.style.marginBottom = '10px';
           
-          // Create the image element
+          // Create the image element with enhanced CORS handling
           const img = document.createElement('img');
+          img.crossOrigin = 'anonymous'; // Set CORS attribute before setting src
           img.src = snag.photo_url;
           img.alt = 'Snag photo';
           img.style.maxWidth = '100%';
@@ -250,7 +353,20 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
           img.style.objectFit = 'contain';
           img.style.margin = '0 auto';
           img.style.display = 'block';
-          img.crossOrigin = 'anonymous'; // Handle CORS issues
+          
+          // Add error handling for image loading
+          img.onerror = () => {
+            console.error('Failed to load image:', snag.photo_url);
+            // Replace with a simple colored box as fallback
+            img.style.width = '200px';
+            img.style.height = '150px';
+            img.style.backgroundColor = '#f0f0f0';
+            img.style.border = '1px solid #ccc';
+            img.style.display = 'flex';
+            img.style.alignItems = 'center';
+            img.style.justifyContent = 'center';
+            img.alt = 'Image could not be loaded';
+          };
           
           imgContainer.appendChild(img);
           snagBox.appendChild(imgContainer);
@@ -276,16 +392,18 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
       // Append the temp div to the body temporarily
       document.body.appendChild(tempDiv);
       
-      // Generate PDF
+      // Generate PDF with enhanced image handling
       const options = {
         margin: 10,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2, 
-          useCORS: true,
-          allowTaint: true,
-          logging: true
+          useCORS: true,  // Enable CORS for images
+          allowTaint: true,  // Allow potentially tainted images
+          logging: true,
+          imageTimeout: 15000,  // Increase timeout for image loading
+          removeContainer: true  // Clean up after rendering
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
