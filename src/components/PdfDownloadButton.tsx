@@ -291,6 +291,9 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
         snagBox.style.marginBottom = '15px';
         snagBox.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
         snagBox.style.boxSizing = 'border-box';
+        // Add page-break control to prevent snags from being split across pages
+        snagBox.style.pageBreakInside = 'avoid';
+        snagBox.style.breakInside = 'avoid';
         
         // Add check carried out subheading
         const checkHeading = document.createElement('div');
@@ -340,7 +343,7 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
           
           // Create the image container
           const imgContainer = document.createElement('div');
-          imgContainer.style.textAlign = 'center';
+          imgContainer.style.textAlign = 'left'; // Align images to the left
           imgContainer.style.marginBottom = '10px';
           
           // Create the image element with enhanced CORS handling
@@ -349,17 +352,17 @@ export default function PdfDownloadButton({ snags, shareDetails, className = '' 
           img.src = snag.photo_url;
           img.alt = 'Snag photo';
           img.style.maxWidth = '100%';
-          img.style.maxHeight = '200px';
+          img.style.maxHeight = '300px'; // Increased by 50% from 200px to 300px
           img.style.objectFit = 'contain';
-          img.style.margin = '0 auto';
+          img.style.margin = '0'; // Remove auto margins to align left
           img.style.display = 'block';
           
           // Add error handling for image loading
           img.onerror = () => {
             console.error('Failed to load image:', snag.photo_url);
             // Replace with a simple colored box as fallback
-            img.style.width = '200px';
-            img.style.height = '150px';
+            img.style.width = '300px'; // Increased by 50% from 200px to 300px
+            img.style.height = '225px'; // Increased by 50% from 150px to 225px
             img.style.backgroundColor = '#f0f0f0';
             img.style.border = '1px solid #ccc';
             img.style.display = 'flex';
