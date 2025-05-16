@@ -387,7 +387,7 @@ function DashboardContent() {
                         {/* Shared On */}
                         <div className="flex justify-between items-start border-b border-gray-200 pb-3">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-0">Complete on</h3>
+                            <h3 className="text-sm font-medium text-gray-500 mb-0">Completed on</h3>
                             <p className="text-base text-gray-900">{new Date(latestShare.updated_at).toLocaleDateString()}</p>
                           </div>
                         </div>
