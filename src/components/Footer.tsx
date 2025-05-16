@@ -31,7 +31,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 href="#" 
                 className="text-sm text-gray-dark hover:text-gray-800 transition-colors duration-200 no-underline"
               >
-                Contact
+                Help
               </Link>
             </div>
             

@@ -31,14 +31,14 @@ export default function Home() {
           {/* Left column - Hero text */}
           <div className="w-full md:w-1/2 md:pr-8 lg:pr-16 mb-12 md:mb-0">
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-foreground">
-              <span className="block">Inspect your new home, like you own it</span>
+              <span className="block">Snag your new home like a pro</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-dark font-light mb-8 max-w-2xl">
-            The easiest way to snag issues with your new home and send them straight to your builder - all in one app.
+            The easiest way to make a snag list and share it with your builder.
             </p>
             <div className="flex">
               <Link href="/signup">
-                <Button variant="primary" size="md">Sign up</Button>
+                <Button variant="primary" size="md">Start snagging for free</Button>
               </Link>
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">Snag it</h3>
                 <p className="text-base text-gray-700">
-                  Take photos and add notes for each issue you find in your new home. Create a comprehensive list of all snags.
+                  Add photos and notes for each issue you find in your new home. Our guided checklists help you carry out a thorough inspection of your new home.
                 </p>
               </article>
 
@@ -117,7 +117,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">Send it</h3>
                 <p className="text-base text-gray-700">
-                  Share your complete snag list with your builder with one click. They'll receive a professional, organized report.
+                  Download your complete snag list and send it to your builder. They'll receive a professional, organised report with photos and notes of each and every snag.
                 </p>
               </article>
 
@@ -131,7 +131,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">Sort it</h3>
                 <p className="text-base text-gray-700">
-                  We align to industry standards and warranties so your builder can get right to fixing snags. No disagreements. No delays.
+                  Our guided checklists are aligned to industry standards and warranties so your builder can get right to fixing snags. No disagreements. No delays.
                 </p>
               </article>
             </div>
