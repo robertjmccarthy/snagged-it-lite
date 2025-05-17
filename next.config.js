@@ -2,9 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'snagged-it.co.uk'],
   },
-  // Add Supabase image domains when we have them
 };
 
 module.exports = nextConfig;

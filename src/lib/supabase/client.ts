@@ -22,7 +22,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'snagged-it-lite',
+      'X-Client-Info': 'snagged-it',
     },
   },
 });
