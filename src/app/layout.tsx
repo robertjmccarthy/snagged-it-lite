@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Poppins } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import './globals.css';
 
 const inter = Inter({ 
@@ -34,6 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans`}>
         <AuthProvider>
           {children}
