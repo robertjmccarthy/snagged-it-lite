@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components';
+import { usePathname } from 'next/navigation';
 
 interface NavigationProps {
   isAuthenticated: boolean;
@@ -14,6 +15,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   const { signOut } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleSignOut = () => {
     try {
@@ -63,20 +65,20 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </>
             ) : (
               <>
-                <Link href="/features" className="menu-item">
+                <Link href="/features" className={`menu-item ${pathname === '/features' ? 'active-nav-link' : ''}`}>
                   How it works
                 </Link>
-                <Link href="/pricing" className="menu-item">
+                <Link href="/pricing" className={`menu-item ${pathname === '/pricing' ? 'active-nav-link' : ''}`}>
                   Pricing
                 </Link>
-                <Link href="/signin" className="menu-item">
+                <Link href="/signin" className={`menu-item ${pathname === '/signin' ? 'active-nav-link' : ''}`}>
                   Sign in
                 </Link>
                 <Link href="/signup" className="menu-item-container">
                   <button 
                     className="btn btn-primary whitespace-nowrap text-sm py-2 px-5"
                   >
-                    Sign up
+                    Sign up free
                   </button>
                 </Link>
               </>
@@ -141,13 +143,13 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
             </div>
           ) : (
             <div className="flex flex-col space-y-3 py-2">
-              <Link href="/features" className="menu-item block">
+              <Link href="/features" className={`menu-item block ${pathname === '/features' ? 'active-nav-link' : ''}`}>
                 How it works
               </Link>
-              <Link href="/pricing" className="menu-item block">
+              <Link href="/pricing" className={`menu-item block ${pathname === '/pricing' ? 'active-nav-link' : ''}`}>
                 Pricing
               </Link>
-              <Link href="/signin" className="menu-item block">
+              <Link href="/signin" className={`menu-item block ${pathname === '/signin' ? 'active-nav-link' : ''}`}>
                 Sign in
               </Link>
               <div className="pt-2 border-t border-gray-200 mt-2">
@@ -155,7 +157,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                   <button 
                     className="btn btn-primary w-full text-sm py-1 px-3"
                   >
-                    Sign up
+                    Sign up free
                   </button>
                 </Link>
               </div>

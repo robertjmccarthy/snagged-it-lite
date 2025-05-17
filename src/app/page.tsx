@@ -103,7 +103,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">Snag it</h3>
                 <p className="text-base text-gray-700">
-                  Add photos and notes for each issue you find in your new home. Our guided checklists help you carry out a thorough inspection of your new home.
+                  Add photos and notes for each issue you find in your new home. Our guided checklists help you carry out a thorough inspection aligned with industry standards.
                 </p>
               </article>
 
@@ -175,7 +175,7 @@ export default function Home() {
             </p>
             <div className="flex justify-center">
               <Link href="/signup">
-                <Button variant="primary" size="md">Sign up for free</Button>
+                <Button variant="primary" size="md">Start snagging for free</Button>
               </Link>
             </div>
           </div>

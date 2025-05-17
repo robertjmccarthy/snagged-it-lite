@@ -54,8 +54,11 @@ function SignUpContent() {
     <Section background="light" spacing="lg" fullHeight className="flex items-center justify-center animate-fade-in">
       <div className="container max-w-md">
         <Card className="p-8">
-          <div className="text-left mb-4">
-            <h1 className="text-3xl font-bold mb-2">Create your account</h1>
+          <div className="text-left mb-6">
+            <h1 className="text-3xl font-bold mb-3">Sign up for free</h1>
+            <p className="text-gray-700">
+              Inspect your home with a guided checklist and record any snags as you go - all for free. You only pay £19.99 when you're ready to send your completed snag list to your builder.
+            </p>
           </div>
           
           <AuthForm

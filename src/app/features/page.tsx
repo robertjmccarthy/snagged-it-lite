@@ -4,73 +4,83 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Layout, Section, Button, Card } from '@/components';
 
 export default function FeaturesPage() {
   const { user, loading } = useAuth();
-
-  // Feature data
-  const features = [
+  
+  // Section data for the how it works flow
+  const sections = [
     {
-      title: 'Step-by-Step Checks',
-      description: 'Guided outside & inside inspection workflows that ensure you don\'t miss anything important.',
-      icon: '/icons/checklist.svg',
-      alt: 'Checklist icon'
+      id: 'signup',
+      title: 'Sign up',
+      description: 'The easiest way to make a snag list and share it with your builder. Start snagging for free today.',
+      imagePath: '/images/phone-snag-capture.png',
+      imageAlt: 'Person signing up for SnaggedIt Lite',
+      iconPath: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      textLeft: true
     },
     {
-      title: 'Photo & Notes',
-      description: 'Attach images and detailed comments to any issue for clear communication with your builder.',
-      icon: '/icons/camera.svg',
-      alt: 'Camera icon'
+      id: 'snagit',
+      title: 'Snag it',
+      description: 'Add photos and notes for each issue you find in your new home. Our guided checklists help you carry out a thorough inspection aligned with industry standards.',
+      imagePath: '/images/phone-snag-capture.png',
+      imageAlt: 'Person taking a photo of a wall defect with their phone',
+      iconPath: 'M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z',
+      textLeft: false
     },
     {
-      title: 'Offline Support',
-      description: 'Continue your inspection without cell service. Data syncs when you\'re back online.',
-      icon: '/icons/offline.svg',
-      alt: 'Offline icon'
+      id: 'sendit',
+      title: 'Send it',
+      description: 'Download your complete snag list and send it to your builder. They\'ll receive a professional, organised report with photos and notes of each and every snag.',
+      imagePath: '/images/phone-snag-capture.png',
+      imageAlt: 'Person sending a snag list to their builder',
+      iconPath: 'M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5',
+      textLeft: true
     },
     {
-      title: 'Secure Storage',
-      description: 'All data & photos stored safely in our secure database with enterprise-grade encryption.',
-      icon: '/icons/secure.svg',
-      alt: 'Security icon'
-    },
-    {
-      title: 'PDF Export',
-      description: 'One-click snag list PDF generation, ready to share with your builder.',
-      icon: '/icons/pdf.svg',
-      alt: 'PDF document icon'
-    },
-    {
-      title: 'Builder Email',
-      description: 'Send your snag list directly to your builder from the app with just a few clicks.',
-      icon: '/icons/email.svg',
-      alt: 'Email icon'
+      id: 'sortit',
+      title: 'Sort it',
+      description: 'Our guided checklists are aligned to industry standards and warranties so your builder can get right to fixing snags. No disagreements. No delays.',
+      imagePath: '/images/phone-snag-capture.png',
+      imageAlt: 'Builder reviewing a snag list',
+      iconPath: 'M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+      textLeft: false
     }
   ];
 
   return (
-    <main className="flex min-h-screen flex-col overflow-x-hidden">
-      <Navigation isAuthenticated={!!user} />
-      
-      <div className="flex-1 animate-fade-in">
-        <section className="py-12 md:py-20 px-6">
-          <div className="container mx-auto max-w-4xl">
-            <div className="text-center mb-12">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Key Features</h1>
-              <p className="text-gray-dark text-lg max-w-2xl mx-auto">
-                SnaggedIt Lite provides everything you need to document and share home build issues.
+    <Layout>
+      <div className="animate-fade-in">
+        {/* Hero Section */}
+        <Section background="light" spacing="md" className="pb-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-left mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">How it works</h1>
+              <p className="text-gray-dark text-lg max-w-2xl">
+                SnaggedIt makes it easy to document and share new home build issues with your builder. Snag it. Send it. Sort it.
               </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-              {features.map((feature, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
-                  <div className="flex items-start mb-4">
-                    <div className="bg-primary/10 p-3 rounded-lg mr-4">
-                      {/* Fallback to SVG if image is not available */}
+          </div>
+        </Section>
+        
+        {/* How It Works Sections */}
+        {sections.map((section, index) => (
+          <Section 
+            key={section.id} 
+            background={index % 2 === 0 ? "white" : "light"} 
+            className={index % 2 !== 0 ? "pb-10 md:pb-12" : ""}
+            spacing="lg"
+          >
+            <div className="container mx-auto max-w-6xl">
+              <div className={`flex flex-col ${section.textLeft ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-16`}>
+                {/* Text Content */}
+                <div className="w-full md:w-1/2">
+                  <div className="mb-6">
+                    <div className="bg-gray-light p-4 rounded-full inline-block mb-4">
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
-                        className="h-6 w-6 text-primary" 
+                        className="h-8 w-8 text-gray-600" 
                         fill="none" 
                         viewBox="0 0 24 24" 
                         stroke="currentColor"
@@ -79,73 +89,98 @@ export default function FeaturesPage() {
                         <path 
                           strokeLinecap="round" 
                           strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d={
-                            feature.title === 'Step-by-Step Checks' ? "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" :
-                            feature.title === 'Photo & Notes' ? "M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z" :
-                            feature.title === 'Offline Support' ? "M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" :
-                            feature.title === 'Secure Storage' ? "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" :
-                            feature.title === 'PDF Export' ? "M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" :
-                            "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          }
+                          strokeWidth={1.5} 
+                          d={section.iconPath}
                         />
                       </svg>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-gray-dark">{feature.description}</p>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.title}</h2>
+                    <p className="text-lg text-gray-700">
+                      {section.description}
+                    </p>
+                  </div>
+                  
+                  {section.id === 'signup' && (
+                    <div className="mt-6">
+                      <Link href="/signup">
+                        <Button variant="primary" size="md">Start snagging for free</Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Image */}
+                <div className="w-full md:w-1/2">
+                  <div className="relative">
+                    {/* Background square with primary color */}
+                    <div 
+                      className="absolute transform -rotate-3" 
+                      style={{ 
+                        backgroundColor: 'var(--primary)', 
+                        zIndex: 0, 
+                        width: 'min(80vw, 25rem)', 
+                        height: 'min(80vw, 25rem)',
+                        maxWidth: '25rem',
+                        maxHeight: '25rem',
+                        top: '1rem',
+                        [section.textLeft ? 'right' : 'left']: '1rem'
+                      }}
+                    ></div>
+                    
+                    {/* Image with rotation */}
+                    <div 
+                      className="relative overflow-hidden transform rotate-[8deg]" 
+                      style={{ 
+                        zIndex: 1, 
+                        position: 'relative', 
+                        width: 'min(80vw, 25rem)', 
+                        height: 'min(80vw, 25rem)',
+                        maxWidth: '25rem',
+                        maxHeight: '25rem'
+                      }}
+                    >
+                      <Image 
+                        src={section.imagePath} 
+                        alt={section.imageAlt} 
+                        width={800} 
+                        height={800}
+                        sizes="(max-width: 768px) 80vw, 25rem"
+                        className="w-full h-full object-cover rounded-lg" 
+                        priority={index === 0}
+                        quality={90}
+                      />
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <div className="bg-primary/10 rounded-xl p-8 md:p-10 mb-12">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">Mobile-First Design</h2>
-                <p className="text-gray-dark">
-                  SnaggedIt Lite is designed for use on-site, with a responsive interface that works perfectly on your phone.
-                </p>
               </div>
-              
+            </div>
+          </Section>
+        ))}
+        
+        {/* CTA Section */}
+        <Section background="light" spacing="md">
+          <Card className="overflow-hidden">
+            <div className="flex flex-col items-center text-center max-w-3xl mx-auto py-12 px-6 md:px-8">
+              <div className="mb-6">
+                <div className="bg-gray-100 rounded-full p-4 inline-block mb-8">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#333333" className="w-8 h-8" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                  </svg>
+                </div>
+                <h2 className="section-title">Start snagging for free</h2>
+              </div>
+              <p className="section-text">
+                Inspect your home with a guided checklist and record any snags as you go - all for free. You only pay £19.99 when you're ready to send your completed snag list to your builder.
+              </p>
               <div className="flex justify-center">
-                <Image 
-                  src="/images/mobile-preview.png" 
-                  alt="SnaggedIt Lite mobile app preview" 
-                  width={300} 
-                  height={600}
-                  className="rounded-xl shadow-lg border border-gray-200"
-                  style={{ objectFit: 'contain' }}
-                  // Fallback for missing image
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <Link 
-                href={user ? "/dashboard" : "/signup"} 
-                className="btn btn-primary rounded-pill px-8 py-3 text-center inline-block"
-                aria-label="Get started with SnaggedIt Lite"
-              >
-                Get Started
-              </Link>
-              
-              <div className="mt-6">
-                <Link 
-                  href="/pricing" 
-                  className="text-primary hover:underline"
-                  aria-label="View pricing information"
-                >
-                  View pricing →
+                <Link href="/signup">
+                  <Button variant="primary" size="md">Start snagging for free</Button>
                 </Link>
               </div>
             </div>
-          </div>
-        </section>
+          </Card>
+        </Section>
       </div>
-    </main>
+    </Layout>
   );
 }

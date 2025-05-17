@@ -164,6 +164,20 @@ body {
     @apply text-sm font-semibold px-3 py-2 rounded-pill transition-colors duration-200 text-foreground hover:bg-gray-lighter;
   }
   
+  .active-nav-link {
+    @apply relative text-foreground;
+  }
+  
+  .active-nav-link::after {
+    content: '';
+    @apply absolute left-0 right-0 bottom-0 h-1 bg-primary transition-opacity duration-200 mx-auto;
+    width: calc(100% - 1.5rem); /* Subtracting horizontal padding */
+  }
+  
+  .active-nav-link:hover::after {
+    @apply opacity-0;
+  }
+  
   .menu-item-container {
     @apply inline-block;
   }
