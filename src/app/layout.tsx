@@ -4,6 +4,7 @@ import { Poppins } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import SearchParamsProvider from '@/components/SearchParamsProvider';
+import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
 const inter = Inter({ 
@@ -44,6 +45,7 @@ export default function RootLayout({
           <SearchParamsProvider>
             {children}
           </SearchParamsProvider>
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>

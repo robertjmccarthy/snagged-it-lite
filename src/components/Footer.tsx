@@ -16,16 +16,16 @@ export default function Footer({ className = '' }: FooterProps) {
             {/* Left side - Links */}
             <div className="flex items-center mb-3 md:mb-0 self-start md:self-auto">
               <Link 
-                href="#" 
-                className="text-sm text-gray-dark hover:text-gray-800 transition-colors duration-200 no-underline mr-6"
-              >
-                Terms
-              </Link>
-              <Link 
-                href="#" 
+                href="/privacy-policy" 
                 className="text-sm text-gray-dark hover:text-gray-800 transition-colors duration-200 no-underline mr-6"
               >
                 Privacy
+              </Link>
+              <Link 
+                href="/cookie-policy" 
+                className="text-sm text-gray-dark hover:text-gray-800 transition-colors duration-200 no-underline mr-6"
+              >
+                Cookies
               </Link>
               <Link 
                 href="#" 
